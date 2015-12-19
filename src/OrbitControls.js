@@ -308,6 +308,7 @@
 		var constraint = new OrbitConstraint( object );
 		this.domElement = domElement || document;
 		this.controlsElement = controlsElement || this.domElement;
+		this.activeElement = null;
 		//this.domElement = ( domElement !== undefined ) ? domElement : document;
 		//this.controlsElement =  ( controlsElement !== undefined ) ? controlsElement : document;
 
@@ -461,6 +462,9 @@
 
 			event.preventDefault();
 
+			//this is required to determine which element target is active at a given time.
+			scope.activeElement = event.target;
+
 			if ( event.button === scope.mouseButtons.ORBIT ) {
 
 				if ( scope.enableRotate === false ) return;
@@ -562,10 +566,14 @@
 
 			if ( scope.enabled === false ) return;
 
+
+
 			document.removeEventListener( 'mousemove', onMouseMove, false );
 			document.removeEventListener( 'mouseup', onMouseUp, false );
 			scope.dispatchEvent( endEvent );
 			state = STATE.NONE;
+			//cancel the active element
+			scope.activeElement = null;
 
 		}
 

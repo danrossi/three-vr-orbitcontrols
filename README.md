@@ -25,3 +25,15 @@ var controlsElem = document.getElementById("vr-controls");
 
  var controls = new THREE.OrbitControls( camera, renderer.domElement, controlsElem );
 ```
+
+The active target element is added to a property `activeElement`. Thia is useful for toggling dragging CSS states.
+
+```
+ controls.addEventListener("start", function(e) {
+   e.target.activeElement.classList.add("is-dragging");
+ });
+
+ controls.addEventListener("end", function(e) {
+   e.target.activeElement.classList.remove("is-dragging");
+ });
+```
