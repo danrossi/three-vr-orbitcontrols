@@ -787,6 +787,24 @@
 
 		}
 
+		/**
+		 * When not using the renderer canvas check the overlay area matches the target as other child controls will interfere with it.
+		 * @param event
+		 */
+		function onElemMouseDown(event) {
+			if (event.target !== scope.domElement) return;
+			onMouseDown(event);
+		}
+
+		/**
+		 * When not using the renderer canvas check the overlay area matches the target as other child controls will interfere with it.
+		 * @param event
+		 */
+		function onElementTouchstart(event) {
+			if (event.target !== scope.domElement) return;
+			touchstart(event);
+		}
+
 		this.dispose = function() {
 
 			//this.domElement.removeEventListener( 'contextmenu', contextmenu, false );
@@ -816,11 +834,11 @@
 			this.controlsElement.addEventListener( 'touchstart', touchstart, false );
 		}
 
-		this.domElement.addEventListener( 'mousedown', onMouseDown, false );
+		this.domElement.addEventListener( 'mousedown', onElemMouseDown, false );
 		this.domElement.addEventListener( 'mousewheel', onMouseWheel, false );
 		this.domElement.addEventListener( 'MozMousePixelScroll', onMouseWheel, false ); // firefox
 
-		this.domElement.addEventListener( 'touchstart', touchstart, false );
+		this.domElement.addEventListener( 'touchstart', onElementTouchstart, false );
 		this.domElement.addEventListener( 'touchend', touchend, false );
 		this.domElement.addEventListener( 'touchmove', touchmove, false );
 
@@ -830,6 +848,7 @@
 		this.update();
 
 	};
+
 
 	THREE.OrbitControls.prototype = Object.create( THREE.EventDispatcher.prototype );
 	THREE.OrbitControls.prototype.constructor = THREE.OrbitControls;
