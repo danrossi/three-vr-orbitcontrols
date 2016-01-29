@@ -492,10 +492,15 @@
 			}
 
 			if ( state !== STATE.NONE ) {
+				//dispatch a start event upon dragging
+				document.addEventListener( 'mousemove', function onMoveCheck() {
+					scope.dispatchEvent( startEvent );
+					document.removeEventListener( 'mousemove', onMoveCheck);
+				}, false );
 
 				document.addEventListener( 'mousemove', onMouseMove, false );
 				document.addEventListener( 'mouseup', onMouseUp, false );
-				scope.dispatchEvent( startEvent );
+
 
 			}
 
@@ -620,6 +625,8 @@
 
 			if ( scope.enabled === false || scope.enableKeys === false || scope.enablePan === false ) return;
 
+
+
 			switch ( event.keyCode ) {
 
 				case scope.keys.UP:
@@ -696,7 +703,13 @@
 
 			}
 
-			if ( state !== STATE.NONE ) scope.dispatchEvent( startEvent );
+			if ( state !== STATE.NONE ) {
+				//dispatch start on touch movement
+				this.domElement.addEventListener( 'touchmove', function onTouchMoveCheck() {
+					this.domElement.removeEventListener('touchmove', onTouchMoveCheck);
+					scope.dispatchEvent(startEvent);
+				});
+			}
 
 		}
 
@@ -800,6 +813,7 @@
 		 * @param event
 		 */
 		function onElemMouseDown(event) {
+
 			if (event.target !== scope.domElement) return;
 			onMouseDown(event);
 		}
@@ -821,7 +835,7 @@
 				this.controlsElement.removeEventListener( 'mousedown', onMouseDown, false );
 				this.controlsElement.removeEventListener( 'touchstart', touchstart, false );
 			}
-			this.domElement.removeEventListener( 'mousedown', onMouseDown, false );
+			this.domElement.removeEventListener( 'mousedown', onElemMouseDown, false );
 			this.domElement.removeEventListener( 'mousewheel', onMouseWheel, false );
 			this.domElement.removeEventListener( 'MozMousePixelScroll', onMouseWheel, false ); // firefox
 
