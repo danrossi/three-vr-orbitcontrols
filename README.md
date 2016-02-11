@@ -37,3 +37,13 @@ The active target element is added to a property `activeElement`. Thia is useful
    e.target.activeElement.classList.remove("is-dragging");
  });
 ```
+
+Damping Factor
+--------------
+
+Damping factor requires more sensitivity for key control rotation and less sensitivity for mouse and touch so two configs have been added.
+
+```
+controls.mouseDampingFactor = 0.25;
+controls.keyDampingFactor = 0.10;
+```
