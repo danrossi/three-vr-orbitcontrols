@@ -2,7 +2,7 @@ OrbitControls.js
 ============
 This is a modification of the three.js OrbitControls to handle two draggable elements in the one instance. This is required because alot of the OO structure is kept internal including event handlers.
 
-Key controls have also been modified for rotation instead of panning as video textures require rotation not panning. 
+Key controls have also been modified for rotation instead of panning as video textures require rotation not panning.
 
 Based on: http://threejs.org/examples/misc_controls_orbit
 
