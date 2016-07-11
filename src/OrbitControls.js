@@ -23,9 +23,6 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 	//the custom controls element, like a giro map tool.
 	this.controlsElement = controlsElement || this.domElement;
 
-	//the active controls element
-	this.activeElement = null;
-
 	// Set to false to disable this control
 	this.enabled = true;
 
@@ -55,12 +52,8 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 	this.enableDamping = false;
 	this.dampingFactor = 0.25;
 
-	//the damping factor for mouse and touch. This needs less sensitive response.
-	this.mouseDampingFactor = 0.25;
-
 	//the damping factor for key controls. This needs a more smoother response.
 	this.keyDampingFactor = 0.10;
-
 
 	// This option actually enables dollying in and out; left as "zoom" for backwards compatibility.
 	// Set to false to disable zooming
@@ -100,13 +93,13 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 
 	this.getPolarAngle = function () {
 
-		return phi;
+		return spherical.phi;
 
 	};
 
 	this.getAzimuthalAngle = function () {
 
-		return theta;
+		return spherical.theta;
 
 	};
 
@@ -137,7 +130,7 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 		var lastPosition = new THREE.Vector3();
 		var lastQuaternion = new THREE.Quaternion();
 
-		return function () {
+		return function update () {
 
 			var position = scope.object.position;
 
@@ -147,12 +140,7 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 			offset.applyQuaternion( quat );
 
 			// angle from z-axis around y-axis
-
-			theta = Math.atan2( offset.x, offset.z );
-
-			// angle from y-axis
-
-			phi = Math.atan2( Math.sqrt( offset.x * offset.x + offset.z * offset.z ), offset.y );
+			spherical.setFromVector3( offset );
 
 			if ( scope.autoRotate && state === STATE.NONE ) {
 
@@ -160,29 +148,27 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 
 			}
 
-			theta += thetaDelta;
-			phi += phiDelta;
+			spherical.theta += sphericalDelta.theta;
+			spherical.phi += sphericalDelta.phi;
 
 			// restrict theta to be between desired limits
-			theta = Math.max( scope.minAzimuthAngle, Math.min( scope.maxAzimuthAngle, theta ) );
+			spherical.theta = Math.max( scope.minAzimuthAngle, Math.min( scope.maxAzimuthAngle, spherical.theta ) );
 
 			// restrict phi to be between desired limits
-			phi = Math.max( scope.minPolarAngle, Math.min( scope.maxPolarAngle, phi ) );
+			spherical.phi = Math.max( scope.minPolarAngle, Math.min( scope.maxPolarAngle, spherical.phi ) );
 
-			// restrict phi to be betwee EPS and PI-EPS
-			phi = Math.max( EPS, Math.min( Math.PI - EPS, phi ) );
+			spherical.makeSafe();
 
-			var radius = offset.length() * scale;
+
+			spherical.radius *= scale;
 
 			// restrict radius to be between desired limits
-			radius = Math.max( scope.minDistance, Math.min( scope.maxDistance, radius ) );
+			spherical.radius = Math.max( scope.minDistance, Math.min( scope.maxDistance, spherical.radius ) );
 
 			// move target to panned location
 			scope.target.add( panOffset );
 
-			offset.x = radius * Math.sin( phi ) * Math.sin( theta );
-			offset.y = radius * Math.cos( phi );
-			offset.z = radius * Math.sin( phi ) * Math.cos( theta );
+			offset.setFromSpherical( spherical );
 
 			// rotate offset back to "camera-up-vector-is-up" space
 			offset.applyQuaternion( quatInverse );
@@ -192,13 +178,13 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 			scope.object.lookAt( scope.target );
 
 			if ( scope.enableDamping === true ) {
-				thetaDelta *= ( 1 - scope.dampingFactor );
-				phiDelta *= ( 1 - scope.dampingFactor );
+
+				sphericalDelta.theta *= ( 1 - scope.dampingFactor );
+				sphericalDelta.phi *= ( 1 - scope.dampingFactor );
 
 			} else {
 
-				thetaDelta = 0;
-				phiDelta = 0;
+				sphericalDelta.set( 0, 0, 0 );
 
 			}
 
@@ -229,7 +215,7 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 
 	}();
 
-	this.dispose = function() {
+	this.disconnect = function() {
 
 		//the custom controls events
 		if (scope.controlsElement) {
@@ -238,7 +224,7 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 		}
 
 		scope.domElement.removeEventListener( 'contextmenu', onContextMenu, false );
-		scope.domElement.removeEventListener( 'mousedown', onElemMouseDown, false );
+		scope.domElement.removeEventListener( 'mousedown', onMouseDown, false );
 		scope.domElement.removeEventListener( 'mousewheel', onMouseWheel, false );
 		scope.domElement.removeEventListener( 'MozMousePixelScroll', onMouseWheel, false ); // firefox
 
@@ -248,7 +234,6 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 
 		document.removeEventListener( 'mousemove', onMouseMove, false );
 		document.removeEventListener( 'mouseup', onMouseUp, false );
-		document.removeEventListener( 'mouseout', onMouseUp, false );
 
 		window.removeEventListener( 'keydown', onKeyDown, false );
 
@@ -273,11 +258,9 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 	var EPS = 0.000001;
 
 	// current position in spherical coordinates
-	var theta;
-	var phi;
+	var spherical = new THREE.Spherical();
+	var sphericalDelta = new THREE.Spherical();
 
-	var phiDelta = 0;
-	var thetaDelta = 0;
 	var scale = 1;
 	var panOffset = new THREE.Vector3();
 	var zoomChanged = false;
@@ -308,13 +291,13 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 
 	function rotateLeft( angle ) {
 
-		thetaDelta -= angle;
+		sphericalDelta.theta -= angle;
 
 	}
 
 	function rotateUp( angle ) {
 
-		phiDelta -= angle;
+		sphericalDelta.phi -= angle;
 
 	}
 
@@ -324,11 +307,7 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 
 		return function panLeft( distance, objectMatrix ) {
 
-			var te = objectMatrix.elements;
-
-			// get X column of objectMatrix
-			v.set( te[ 0 ], te[ 1 ], te[ 2 ] );
-
+			v.setFromMatrixColumn( objectMatrix, 0 ); // get X column of objectMatrix
 			v.multiplyScalar( - distance );
 
 			panOffset.add( v );
@@ -343,11 +322,7 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 
 		return function panUp( distance, objectMatrix ) {
 
-			var te = objectMatrix.elements;
-
-			// get Y column of objectMatrix
-			v.set( te[ 4 ], te[ 5 ], te[ 6 ] );
-
+			v.setFromMatrixColumn( objectMatrix, 1 ); // get Y column of objectMatrix
 			v.multiplyScalar( distance );
 
 			panOffset.add( v );
@@ -361,7 +336,7 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 
 		var offset = new THREE.Vector3();
 
-		return function( deltaX, deltaY ) {
+		return function pan ( deltaX, deltaY ) {
 
 			var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
 
@@ -382,8 +357,8 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 			} else if ( scope.object instanceof THREE.OrthographicCamera ) {
 
 				// orthographic
-				panLeft( deltaX * ( scope.object.right - scope.object.left ) / element.clientWidth, scope.object.matrix );
-				panUp( deltaY * ( scope.object.top - scope.object.bottom ) / element.clientHeight, scope.object.matrix );
+				panLeft( deltaX * ( scope.object.right - scope.object.left ) / scope.object.zoom / element.clientWidth, scope.object.matrix );
+				panUp( deltaY * ( scope.object.top - scope.object.bottom ) / scope.object.zoom / element.clientHeight, scope.object.matrix );
 
 			} else {
 
@@ -474,8 +449,7 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 		rotateEnd.set( event.clientX, event.clientY );
 		rotateDelta.subVectors( rotateEnd, rotateStart );
 
-		//use the mouse target not the renderer element.
-		var element = scope.domElement === document ? scope.domElement.body : event.target;
+		var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
 
 		// rotating across whole screen goes 360 degrees around
 		rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientWidth * scope.rotateSpeed );
@@ -569,42 +543,66 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 
 	}
 
-	function handleKeyDown( event ) {
 
-		//console.log( 'handleKeyDown' );
+	function handleKeyDown( event ) {
 
 		//for video textures we want to rotate not pan
 
 		switch ( event.keyCode ) {
 
 			case scope.keys.UP:
-				//pan( 0, scope.keyPanSpeed );
 				rotateUp(THREE.Math.degToRad(scope.rotateSpeed));
 				scope.update();
 				break;
 
 			case scope.keys.BOTTOM:
-				//pan( 0, - scope.keyPanSpeed );
 				rotateUp(THREE.Math.degToRad(-scope.rotateSpeed));
 				scope.update();
 				break;
 
 			case scope.keys.LEFT:
-				//console.log("pan left");
 				rotateLeft(THREE.Math.degToRad(scope.rotateSpeed));
-				//pan( scope.keyPanSpeed, 0 );
 				scope.update();
 				break;
 
 			case scope.keys.RIGHT:
 				rotateLeft(THREE.Math.degToRad(-scope.rotateSpeed));
-				//pan( - scope.keyPanSpeed, 0 );
 				scope.update();
 				break;
 
 		}
 
 	}
+
+	/*function handleKeyDown( event ) {
+
+		//console.log( 'handleKeyDown' );
+
+		switch ( event.keyCode ) {
+
+			case scope.keys.UP:
+				pan( 0, scope.keyPanSpeed );
+				scope.update();
+				break;
+
+			case scope.keys.BOTTOM:
+				pan( 0, - scope.keyPanSpeed );
+				scope.update();
+				break;
+
+			case scope.keys.LEFT:
+				pan( scope.keyPanSpeed, 0 );
+				scope.update();
+				break;
+
+			case scope.keys.RIGHT:
+				pan( - scope.keyPanSpeed, 0 );
+				scope.update();
+				break;
+
+		}
+
+	}*/
 
 	function handleTouchStartRotate( event ) {
 
@@ -756,7 +754,6 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 
 		if ( state !== STATE.NONE ) {
 
-			//wait for a movement event to dispatch start
 			document.addEventListener( 'mousemove', function onMoveCheck() {
 				scope.dispatchEvent( startEvent );
 				document.removeEventListener( 'mousemove', onMoveCheck);
@@ -765,6 +762,7 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 			document.addEventListener( 'mousemove', onMouseMove, false );
 			document.addEventListener( 'mouseup', onMouseUp, false );
 			document.addEventListener( 'mouseout', onMouseUp, false );
+
 
 		}
 
@@ -798,6 +796,8 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 
 	}
 
+
+
 	function onMouseUp( event ) {
 
 		if ( scope.enabled === false ) return;
@@ -819,7 +819,7 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 
 	function onMouseWheel( event ) {
 
-		if ( scope.enabled === false || scope.enableZoom === false || state !== STATE.NONE ) return;
+		if ( scope.enabled === false || scope.enableZoom === false || ( state !== STATE.NONE && state !== STATE.ROTATE ) ) return;
 
 		event.preventDefault();
 		event.stopPropagation();
@@ -886,7 +886,6 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 
 		if ( state !== STATE.NONE ) {
 
-			//wait for a touch move event to dispatch start
 			scope.domElement.addEventListener( 'touchmove', function onTouchMoveCheck() {
 				scope.domElement.removeEventListener('touchmove', onTouchMoveCheck);
 				scope.dispatchEvent(startEvent);
@@ -958,23 +957,31 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 
 	}
 
-	//the custom controls element events
-	if (scope.controlsElement) {
-		scope.controlsElement.addEventListener( 'mousedown', onMouseDown, false );
-		scope.controlsElement.addEventListener( 'touchstart', onTouchStart, false );
-	}
 
-	scope.domElement.addEventListener( 'contextmenu', onContextMenu, false );
+	this.connect = function() {
 
-	scope.domElement.addEventListener( 'mousedown', onElemMouseDown, false );
-	scope.domElement.addEventListener( 'mousewheel', onMouseWheel, false );
-	scope.domElement.addEventListener( 'MozMousePixelScroll', onMouseWheel, false ); // firefox
+		//the custom controls element events
+		if (scope.controlsElement) {
+			scope.controlsElement.addEventListener( 'mousedown', onMouseDown, false );
+			scope.controlsElement.addEventListener( 'touchstart', onTouchStart, false );
+		}
 
-	scope.domElement.addEventListener( 'touchstart', onTouchStart, false );
-	scope.domElement.addEventListener( 'touchend', onTouchEnd, false );
-	scope.domElement.addEventListener( 'touchmove', onTouchMove, false );
+		scope.domElement.addEventListener( 'contextmenu', onContextMenu, false );
 
-	window.addEventListener( 'keydown', onKeyDown, false );
+		scope.domElement.addEventListener( 'mousedown', onMouseDown, false );
+		scope.domElement.addEventListener( 'mousewheel', onMouseWheel, false );
+		scope.domElement.addEventListener( 'MozMousePixelScroll', onMouseWheel, false ); // firefox
+
+		scope.domElement.addEventListener( 'touchstart', onTouchStart, false );
+		scope.domElement.addEventListener( 'touchend', onTouchEnd, false );
+		scope.domElement.addEventListener( 'touchmove', onTouchMove, false );
+
+		window.addEventListener( 'keydown', onKeyDown, false );
+
+	};
+
+
+	this.connect();
 
 	// force an update at start
 
@@ -1077,14 +1084,14 @@ Object.defineProperties( THREE.OrbitControls.prototype, {
 		get: function () {
 
 			console.warn( 'THREE.OrbitControls: .staticMoving has been deprecated. Use .enableDamping instead.' );
-			return ! this.constraint.enableDamping;
+			return ! this.enableDamping;
 
 		},
 
 		set: function ( value ) {
 
 			console.warn( 'THREE.OrbitControls: .staticMoving has been deprecated. Use .enableDamping instead.' );
-			this.constraint.enableDamping = ! value;
+			this.enableDamping = ! value;
 
 		}
 
@@ -1095,14 +1102,14 @@ Object.defineProperties( THREE.OrbitControls.prototype, {
 		get: function () {
 
 			console.warn( 'THREE.OrbitControls: .dynamicDampingFactor has been renamed. Use .dampingFactor instead.' );
-			return this.constraint.dampingFactor;
+			return this.dampingFactor;
 
 		},
 
 		set: function ( value ) {
 
 			console.warn( 'THREE.OrbitControls: .dynamicDampingFactor has been renamed. Use .dampingFactor instead.' );
-			this.constraint.dampingFactor = value;
+			this.dampingFactor = value;
 
 		}
 
