@@ -591,10 +591,16 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 		scope.update();
 	}
 
+	function setKeyDampingFactor() {
+		scope.dampingFactor = scope.keyDampingFactor;
+	}
+
+
 	/**
 	 * Rotate left api
 	 */
 	this.moveLeft = function() {
+		setKeyDampingFactor();
 		rotateHorizontal(scope.rotateSpeed);
 	};
 
@@ -602,6 +608,7 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 	 * Rotate right api
 	 */
 	this.moveRight = function() {
+		setKeyDampingFactor();
 		rotateHorizontal(-scope.rotateSpeed);
 	};
 
@@ -609,6 +616,7 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 	 * Rotate down api
 	 */
 	this.moveDown = function() {
+		setKeyDampingFactor();
 		rotateVertical(-scope.rotateSpeed);
 	};
 
@@ -616,6 +624,7 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 	 * Rotate up api
 	 */
 	this.moveUp = function() {
+		setKeyDampingFactor();
 		rotateVertical(scope.rotateSpeed);
 	};
 
