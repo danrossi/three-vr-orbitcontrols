@@ -543,7 +543,10 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 
 	}
 
-
+	/**
+	 * Keyboard controls with auto rotation
+	 * @param event
+	 */
 	function handleKeyDown( event ) {
 
 		//for video textures we want to rotate not pan
@@ -551,28 +554,70 @@ THREE.OrbitControls = function ( object, domElement, controlsElement ) {
 		switch ( event.keyCode ) {
 
 			case scope.keys.UP:
-				rotateUp(THREE.Math.degToRad(scope.rotateSpeed));
-				scope.update();
+				scope.moveUp();
 				break;
 
 			case scope.keys.BOTTOM:
-				rotateUp(THREE.Math.degToRad(-scope.rotateSpeed));
-				scope.update();
+				scope.moveDown();
 				break;
 
 			case scope.keys.LEFT:
-				rotateLeft(THREE.Math.degToRad(scope.rotateSpeed));
-				scope.update();
+				scope.moveLeft();
 				break;
 
 			case scope.keys.RIGHT:
-				rotateLeft(THREE.Math.degToRad(-scope.rotateSpeed));
-				scope.update();
+				scope.moveRight();
 				break;
 
 		}
 
 	}
+
+	/**
+	 * Vertical auto rotation
+	 * @param speed
+	 */
+	function rotateVertical(speed) {
+		rotateUp(THREE.Math.degToRad(speed));
+		scope.update();
+	}
+
+	/**
+	 * Horizontal audo rotation
+	 * @param speed
+	 */
+	function rotateHorizontal(speed) {
+		rotateLeft(THREE.Math.degToRad(speed));
+		scope.update();
+	}
+
+	/**
+	 * Rotate left api
+	 */
+	this.moveLeft = function() {
+		rotateHorizontal(scope.rotateSpeed);
+	};
+
+	/**
+	 * Rotate right api
+	 */
+	this.moveRight = function() {
+		rotateHorizontal(-scope.rotateSpeed);
+	};
+
+	/**
+	 * Rotate down api
+	 */
+	this.moveDown = function() {
+		rotateVertical(-scope.rotateSpeed);
+	};
+
+	/**
+	 * Rotate up api
+	 */
+	this.moveUp = function() {
+		rotateVertical(scope.rotateSpeed);
+	};
 
 	/*function handleKeyDown( event ) {
 
