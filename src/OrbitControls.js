@@ -15,7 +15,9 @@
 //    Orbit - left mouse / touch: one finger move
 //    Zoom - middle mouse, or mousewheel / touch: two finger spread or squish
 //    Pan - right mouse, or arrow keys / touch: three finter swipe
-import { EventDispatcher } from '../three.js/src/core/EventDispatcher';
+
+//place three.js in the root level with this checkout.
+import { EventDispatcher } from '../../three.js/src/core/EventDispatcher';
 
 var EPS = 0.000001;
 var STATE = { NONE : - 1, ROTATE : 0, DOLLY : 1, PAN : 2, TOUCH_ROTATE : 3, TOUCH_DOLLY : 4, TOUCH_PAN : 5 };
@@ -127,11 +129,11 @@ OrbitControls.prototype.getZoomScale = function() {
 	return Math.pow( 0.95, this.zoomSpeed );
 };
 
-OrbitControls.prototype.rotateLeft( angle ) {
+OrbitControls.prototype.rotateLeft = function( angle ) {
 	this.sphericalDelta.theta -= angle;
 };
 
-OrbitControls.prototype.rotateUp( angle ) {
+OrbitControls.prototype.rotateUp = function( angle ) {
 	this.sphericalDelta.phi -= angle;
 };
 
