@@ -1,3 +1,5 @@
+import { EventDispatcher } from '../../three.js/src/core/EventDispatcher';
+
 /**
  * OrbitControls for mouse and keyboard controls.
  * Changes to turn it into a three.js module for bundling.
@@ -16,8 +18,6 @@
 //    Zoom - middle mouse, or mousewheel / touch: two finger spread or squish
 //    Pan - right mouse, or arrow keys / touch: three finter swipe
 
-//place three.js in the root level with this checkout.
-import { EventDispatcher } from '../../three.js/src/core/EventDispatcher';
 
 var EPS = 0.000001;
 var STATE = { NONE : - 1, ROTATE : 0, DOLLY : 1, PAN : 2, TOUCH_ROTATE : 3, TOUCH_DOLLY : 4, TOUCH_PAN : 5 };
