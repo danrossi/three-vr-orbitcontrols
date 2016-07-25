@@ -394,11 +394,11 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		if ( this.dollyDelta.y > 0 ) {
 
-			this.dollyOut( getZoomScale() );
+			this.dollyOut( this.getZoomScale() );
 
 		} else if ( this.dollyDelta.y < 0 ) {
 
-			this.dollyIn( getZoomScale() );
+			this.dollyIn( this.getZoomScale() );
 
 		}
 
