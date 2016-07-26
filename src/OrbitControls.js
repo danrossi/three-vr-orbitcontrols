@@ -278,7 +278,7 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 	 */
 	moveRight: function() {
 		this.setKeyDampingFactor();
-		rotateHorizontal(-this.rotateSpeed);
+		this.rotateHorizontal(-this.rotateSpeed);
 	},
 
 	/**
@@ -293,8 +293,8 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 	 * Rotate up api
 	 */
 	moveUp: function() {
-		setKeyDampingFactor();
-		rotateVertical(this.rotateSpeed);
+		this.setKeyDampingFactor();
+		this.rotateVertical(this.rotateSpeed);
 	},
 
 
@@ -722,9 +722,9 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 				document.removeEventListener( 'mousemove', onMoveCheck);
 			}.bind(this), false );
 
-			document.addEventListener( 'mousemove', this.onMouseMove.bind(this), false );
-			document.addEventListener( 'mouseup', this.onMouseUp.bind(this), false );
-			document.addEventListener( 'mouseout', this.onMouseUp.bind(this), false );
+			document.addEventListener( 'mousemove', this.onMouseMoveRef, false );
+			document.addEventListener( 'mouseup', this.onMouseUpRef, false );
+			document.addEventListener( 'mouseout', this.onMouseUpRef, false );
 
 
 		}
@@ -766,9 +766,9 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		this.handleMouseUp( event );
 
-		document.removeEventListener( 'mousemove', this.onMouseMove, false );
-		document.removeEventListener( 'mouseup', this.onMouseUp, false );
-		document.removeEventListener( 'mouseout', this.onMouseUp, false );
+		document.removeEventListener( 'mousemove', this.onMouseMoveRef, false );
+		document.removeEventListener( 'mouseup', this.onMouseUpRef, false );
+		document.removeEventListener( 'mouseout', this.onMouseUpRef, false );
 
 		this.dispatchEnd();
 
@@ -820,22 +820,34 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 		 this.controlsElement.addEventListener( 'touchstart', onTouchStart, false );
 		 }*/
 
+		this.enabled = true;
+
 		this.domElement.addEventListener( 'contextmenu', this.onContextMenu, false );
 
-		this.domElement.addEventListener( 'mousedown', this.onMouseDown.bind(this), false );
-		this.domElement.addEventListener( 'mousewheel', this.onMouseWheel.bind(this), false );
-		this.domElement.addEventListener( 'MozMousePixelScroll', this.onMouseWheel.bind(this), false ); // firefox
+		this.onMouseDownRef = this.onMouseDown.bind(this),
+			this.onMouseWheelRef = this.onMouseWheel.bind(this),
+			this.onMouseWheelRef = this.onMouseWheel.bind(this),
+			this.onMouseMoveRef =  this.onMouseMove.bind(this),
+			this.onMouseUpRef = this.onMouseUp.bind(this),
+			this.onTouchStartRef = this.onTouchStart.bind(this),
+			this.onTouchEndRef = this.onTouchEnd.bind(this),
+			this.onTouchMoveRef = this.onTouchMove.bind(this),
+			this.onKeyDownRef = this.onKeyDown.bind(this);
 
-		this.domElement.addEventListener( 'touchstart', this.onTouchStart.bind(this), false );
-		this.domElement.addEventListener( 'touchend', this.onTouchEnd.bind(this), false );
-		this.domElement.addEventListener( 'touchmove', this.onTouchMove.bind(this), false );
+		this.domElement.addEventListener( 'mousedown', this.onMouseDownRef, false );
+		this.domElement.addEventListener( 'mousewheel', this.onMouseWheelRef, false );
+		this.domElement.addEventListener( 'MozMousePixelScroll', this.onMouseWheelRef, false ); // firefox
+		this.domElement.addEventListener( 'touchstart', this.onTouchStartRef, false );
+		this.domElement.addEventListener( 'touchend', this.onTouchEndRef, false );
+		this.domElement.addEventListener( 'touchmove', this.onTouchMoveRef, false );
 
-		window.addEventListener( 'keydown', this.onKeyDown.bind(this), false );
+		window.addEventListener( 'keydown', this.onKeyDownRef, false );
 
 	},
 
 	disconnect: function() {
 
+		this.enabled = false;
 		//the custom controls events
 		/*if (this.controlsElement) {
 		 this.controlsElement.removeEventListener( 'mousedown', onMouseDown, false );
@@ -843,13 +855,13 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 		 }*/
 
 		this.domElement.removeEventListener( 'contextmenu', this.onContextMenu, false );
-		this.domElement.removeEventListener( 'mousedown', this.onMouseDown, false );
-		this.domElement.removeEventListener( 'mousewheel', this.onMouseWheel, false );
-		this.domElement.removeEventListener( 'MozMousePixelScroll', this.onMouseWheel, false ); // firefox
+		this.domElement.removeEventListener( 'mousedown', this.onMouseDownRef, false );
+		this.domElement.removeEventListener( 'mousewheel', this.onMouseWheelRef , false );
+		this.domElement.removeEventListener( 'MozMousePixelScroll', this.onMouseWheelRef, false ); // firefox
 
-		this.domElement.removeEventListener( 'touchstart', this.onTouchStart, false );
-		this.domElement.removeEventListener( 'touchend', this.onTouchEnd, false );
-		this.domElement.removeEventListener( 'touchmove', this.onTouchMove, false );
+		this.domElement.removeEventListener( 'touchstart', this.onTouchStartRef, false );
+		this.domElement.removeEventListener( 'touchend', this.onTouchEndRef, false );
+		this.domElement.removeEventListener( 'touchmove', this.onTouchMoveRef, false );
 
 		document.removeEventListener( 'mousemove', this.onMouseMove, false );
 		document.removeEventListener( 'mouseup', this.onMouseUp, false );
