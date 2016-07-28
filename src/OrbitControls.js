@@ -496,7 +496,10 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 			case 1: // one-fingered touch: rotate
 
 				if ( this.enableRotate === false ) return;
-				if ( this.state !== STATE.TOUCH_ROTATE ) return; // is this needed?...
+				//if ( this.state !== STATE.TOUCH_ROTATE ) return; // is this needed?...
+
+
+				//console.log("HANDLE ROTATE");
 
 				this.handleTouchMoveRotate( event );
 
@@ -504,8 +507,10 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 			case 2: // two-fingered touch: dolly
 
+				//console.log("HANDLE DOLLY");
+
 				if ( this.enableZoom === false ) return;
-				if ( this.state !== STATE.TOUCH_DOLLY ) return; // is this needed?...
+				//if ( this.state !== STATE.TOUCH_DOLLY ) return; // is this needed?...
 
 				this.handleTouchMoveDolly( event );
 
@@ -514,7 +519,7 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 			case 3: // three-fingered touch: pan
 
 				if ( this.enablePan === false ) return;
-				if ( this.state !== STATE.TOUCH_PAN ) return; // is this needed?...
+				//if ( this.state !== STATE.TOUCH_PAN ) return; // is this needed?...
 
 				this.handleTouchMovePan( event );
 
@@ -822,6 +827,9 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		this.enabled = true;
 
+		//reset the controls for when switching out of VRControls
+		this.reset();
+
 		this.domElement.addEventListener( 'contextmenu', this.onContextMenu, false );
 
 		this.onMouseDownRef = this.onMouseDown.bind(this),
@@ -853,6 +861,9 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 		 this.controlsElement.removeEventListener( 'mousedown', onMouseDown, false );
 		 this.controlsElement.removeEventListener( 'touchstart', onTouchStart, false );
 		 }*/
+
+		//reset the controls for when switching to VRControls
+		this.reset();
 
 		this.domElement.removeEventListener( 'contextmenu', this.onContextMenu, false );
 		this.domElement.removeEventListener( 'mousedown', this.onMouseDownRef, false );
