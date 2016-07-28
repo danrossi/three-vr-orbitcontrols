@@ -308,6 +308,7 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		//for video textures we want to rotate not pan
 
+
 		switch ( event.keyCode ) {
 
 			case this.keys.up:
@@ -802,7 +803,7 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 	onKeyDown: function( event ) {
 
-		if ( this.enabled === false || this.enableKeys === false || this.enablePan === false ) return;
+		if ( this.enabled === false || this.enableKeys === false ) return;
 
 		//set the damping factor for key controls which needs more sensitivity.
 		this.dampingFactor = this.keyDampingFactor;
