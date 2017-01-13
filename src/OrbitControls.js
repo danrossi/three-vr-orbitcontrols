@@ -689,6 +689,9 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		if ( this.enabled === false ) return;
 
+		//disable events when triggered by overlayed elements. 
+		if (this.domElement !== event.target) return;
+
 		event.preventDefault();
 
 		//reset the damping factor for mouse controls
