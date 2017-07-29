@@ -24,9 +24,6 @@ var STATE = { NONE : - 1, ROTATE : 0, DOLLY : 1, PAN : 2, TOUCH_ROTATE : 3, TOUC
 
 function OrbitControls( object, domElement) {
 
-	//the custom controls element, like a giro map tool.
-	//this.controlsElement = controlsElement || this.domElement;
-
 	this.object = object,
 		this.domElement = ( domElement !== undefined ) ? domElement : document,
 		// Set to false to disable this control
@@ -823,12 +820,6 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 	connect: function() {
 
-		//the custom controls element events
-		/*if (this.controlsElement) {
-		 this.controlsElement.addEventListener( 'mousedown', onMouseDown, false );
-		 this.controlsElement.addEventListener( 'touchstart', onTouchStart, false );
-		 }*/
-
 		this.enabled = true;
 
 		//reset the controls for when switching out of VRControls
@@ -860,11 +851,6 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 	disconnect: function() {
 
 		this.enabled = false;
-		//the custom controls events
-		/*if (this.controlsElement) {
-		 this.controlsElement.removeEventListener( 'mousedown', onMouseDown, false );
-		 this.controlsElement.removeEventListener( 'touchstart', onTouchStart, false );
-		 }*/
 
 		//reset the controls for when switching to VRControls
 		this.reset();
