@@ -19,17 +19,20 @@ import { EventDispatcher } from '../../three.js/src/core/EventDispatcher';
 //    Pan - right mouse, or arrow keys / touch: three finter swipe
 
 
-var EPS = 0.000001;
-var STATE = { NONE : - 1, ROTATE : 0, DOLLY : 1, PAN : 2, TOUCH_ROTATE : 3, TOUCH_DOLLY : 4, TOUCH_PAN : 5 };
+const EPS = 0.000001,
+STATE = { NONE : - 1, ROTATE : 0, DOLLY : 1, PAN : 2, TOUCH_ROTATE : 3, TOUCH_DOLLY : 4, TOUCH_PAN : 5 };
 
-function OrbitControls( object, domElement) {
+class OrbitControls extends EventDispatcher {
+	constructor( object, domElement) {
 
-	this.object = object,
+		super();
+
+		this.object = object,
 		this.domElement = ( domElement !== undefined ) ? domElement : document,
 		// Set to false to disable this control
 		this.enabled = true;
-	// "target" sets the location of focus, where the object orbits around
-	this.target = new THREE.Vector3(),
+		// "target" sets the location of focus, where the object orbits around
+		this.target = new THREE.Vector3(),
 		// How far you can dolly in and out ( PerspectiveCamera only )
 		this.minDistance = 0,
 		this.maxDistance = Infinity,
@@ -101,74 +104,70 @@ function OrbitControls( object, domElement) {
 		this.dollyEnd = new THREE.Vector2(),
 		this.dollyDelta = new THREE.Vector2();
 
+		this.connect();
 
-	this.connect();
+		// force an update at start
+		this.update();
+	}
 
-	// force an update at start
-	this.update();
-};
-
-
-Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
-
-	getPolarAngle: function () {
+	getPolarAngle () {
 		return this.spherical.phi;
-	},
+	}
 
-	getAzimuthalAngle: function () {
+	getAzimuthalAngle () {
 		return this.spherical.theta;
-	},
+	}
 
 
-	getAutoRotationAngle: function() {
+	getAutoRotationAngle() {
 		return 2 * Math.PI / 60 / 60 * this.autoRotateSpeed;
-	},
+	}
 
-	getZoomScale: function() {
+	getZoomScale() {
 		return Math.pow( 0.95, this.zoomSpeed );
-	},
+	}
 
-	rotateLeft: function( angle ) {
+	rotateLeft( angle ) {
 		this.sphericalDelta.theta -= angle;
-	},
+	}
 
-	rotateUp: function( angle ) {
+	rotateUp( angle ) {
 		this.sphericalDelta.phi -= angle;
-	},
+	}
 
-	panLeft: function(distance, objectMatrix) {
+	panLeft(distance, objectMatrix) {
 
-		var v = new THREE.Vector3();
+		const v = new THREE.Vector3();
 
 		v.setFromMatrixColumn( objectMatrix, 0 ); // get X column of objectMatrix
 		v.multiplyScalar( - distance );
 
 		this.panOffset.add( v );
-	},
+	}
 
-	panUp: function(distance, objectMatrix) {
+	panUp(distance, objectMatrix) {
 
-		var v = new THREE.Vector3();
+		const v = new THREE.Vector3();
 
 		v.setFromMatrixColumn( objectMatrix, 1 ); // get Y column of objectMatrix
 		v.multiplyScalar( distance );
 
 		this.panOffset.add( v );
-	},
+	}
 
 	// deltaX and deltaY are in pixels; right and down are positive
-	pan: function(deltaX, deltaY) {
+	pan(deltaX, deltaY) {
 
-		var offset = new THREE.Vector3();
+		const offset = new THREE.Vector3();
 
-		var element = this.domElement === document ? this.domElement.body : this.domElement;
+		const element = this.domElement === document ? this.domElement.body : this.domElement;
 
 		if ( this.object instanceof THREE.PerspectiveCamera ) {
 
 			// perspective
-			var position = this.object.position;
+			const position = this.object.position;
 			offset.copy( position ).sub( this.target );
-			var targetDistance = offset.length();
+			let targetDistance = offset.length();
 
 			// half of the fov is center to top of screen
 			targetDistance *= Math.tan( ( this.object.fov / 2 ) * Math.PI / 180.0 );
@@ -192,11 +191,9 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 		}
 
 
-	},
+	}
 
-
-
-	dollyIn: function( dollyScale ) {
+	dollyIn( dollyScale ) {
 
 		if ( this.object instanceof THREE.PerspectiveCamera ) {
 
@@ -215,9 +212,9 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		}
 
-	},
+	}
 
-	dollyOut: function( dollyScale ) {
+	dollyOut( dollyScale ) {
 
 		if ( this.object instanceof THREE.PerspectiveCamera ) {
 
@@ -236,63 +233,63 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		}
 
-	},
+	}
 
 
 	/**
 	 * Vertical auto rotation
 	 * @param speed
 	 */
-	rotateVertical: function(speed) {
+	rotateVertical(speed) {
 		this.rotateUp(THREE.Math.degToRad(speed));
 		this.update();
-	},
+	}
 
 	/**
 	 * Horizontal audo rotation
 	 * @param speed
 	 */
-	rotateHorizontal: function(speed) {
+	rotateHorizontal(speed) {
 		this.rotateLeft(THREE.Math.degToRad(speed));
 		this.update();
-	},
+	}
 
-	setKeyDampingFactor: function() {
+	setKeyDampingFactor() {
 		this.dampingFactor = this.keyDampingFactor;
-	},
+	}
 
 
 	/**
 	 * Rotate left api
 	 */
-	moveLeft: function() {
+	moveLeft() {
 		this.setKeyDampingFactor();
 		this.rotateHorizontal(this.rotateSpeed);
-	},
+	}
 
 	/**
 	 * Rotate right api
 	 */
-	moveRight: function() {
+	moveRight() {
 		this.setKeyDampingFactor();
 		this.rotateHorizontal(-this.rotateSpeed);
-	},
+	}
 
 	/**
 	 * Rotate down api
 	 */
-	moveDown: function() {
+	moveDown() {
 		this.setKeyDampingFactor();
 		this.rotateVertical(-this.rotateSpeed);
-	},
+	}
 
 	/**
 	 * Rotate up api
 	 */
-	moveUp: function() {
+	moveUp() {
 		this.setKeyDampingFactor();
 		this.rotateVertical(this.rotateSpeed);
-	},
+	}
 
 
 
@@ -301,7 +298,7 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 	 * Keyboard controls with auto rotation
 	 * @param event
 	 */
-	handleKeyDown: function( event ) {
+	handleKeyDown( event ) {
 
 		//for video textures we want to rotate not pan
 
@@ -325,45 +322,35 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 				break;
 
 		}
-	},
+	}
 
 
-	handleTouchStartRotate: function( event ) {
-
+	handleTouchStartRotate( event ) {
 		//console.log( 'handleTouchStartRotate' );
-
 		this.rotateStart.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
+	}
 
-	},
-
-	handleTouchStartDolly: function( event ) {
-
+	handleTouchStartDolly( event ) {
 		//console.log( 'handleTouchStartDolly' );
-
-		var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX,
+		const dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX,
 			dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY,
 			distance = Math.sqrt( dx * dx + dy * dy );
 
 		this.dollyStart.set( 0, distance );
+	}
 
-	},
-
-	handleTouchStartPan: function( event ) {
-
+	handleTouchStartPan( event ) {
 		//console.log( 'handleTouchStartPan' );
-
 		this.panStart.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
 
-	},
+	}
 
-	handleTouchMoveRotate: function( event ) {
-
+	handleTouchMoveRotate( event ) {
 		//console.log( 'handleTouchMoveRotate' );
-
 		this.rotateEnd.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
 		this.rotateDelta.subVectors( this.rotateEnd, this.rotateStart );
 
-		var element = this.domElement === document ? this.domElement.body : this.domElement;
+		const element = this.domElement === document ? this.domElement.body : this.domElement;
 
 		// rotating across whole screen goes 360 degrees around
 		this.rotateLeft( 2 * Math.PI * this.rotateDelta.x / element.clientWidth * this.rotateSpeed );
@@ -374,17 +361,15 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 		this.rotateStart.copy( this.rotateEnd );
 
 		this.update();
+	}
 
-	},
-
-	handleTouchMoveDolly: function( event ) {
+	handleTouchMoveDolly( event ) {
 
 		//console.log( 'handleTouchMoveDolly' );
 
-		var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
-		var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
-
-		var distance = Math.sqrt( dx * dx + dy * dy );
+		const dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX,
+		dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY,
+		distance = Math.sqrt( dx * dx + dy * dy );
 
 		this.dollyEnd.set( 0, distance );
 
@@ -404,9 +389,9 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		this.update();
 
-	},
+	}
 
-	handleTouchMovePan: function( event ) {
+	handleTouchMovePan( event ) {
 
 		//console.log( 'handleTouchMovePan' );
 
@@ -419,16 +404,16 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 		this.panStart.copy( this.panEnd );
 
 		this.update();
-	},
+	}
 
-	handleTouchEnd: function( event ) {
+	handleTouchEnd( event ) {
 
 		//console.log( 'handleTouchEnd' );
 
-	},
+	}
 
 
-	onTouchStart: function( event ) {
+	onTouchStart( event ) {
 
 		if ( this.enabled === false ) return;
 
@@ -472,17 +457,17 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		if ( this.state !== STATE.NONE ) {
 
-			this.domElement.addEventListener( 'touchmove', function onTouchMoveCheck() {
+			const onTouchMoveCheck = () => {
 				this.domElement.removeEventListener('touchmove', onTouchMoveCheck);
 				this.dispatchStart();
-			}.bind(this));
+			};
 
+			this.domElement.addEventListener( 'touchmove', onTouchMoveCheck);
 		}
 
-	},
+	}
 
-
-	onTouchMove: function( event ) {
+	onTouchMove( event ) {
 
 		if ( this.enabled === false ) return;
 
@@ -529,9 +514,9 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		}
 
-	},
+	}
 
-	onTouchEnd: function( event ) {
+	onTouchEnd( event ) {
 
 		if ( this.enabled === false ) return;
 
@@ -541,43 +526,43 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		this.state = STATE.NONE;
 
-	},
+	}
 
 
-	handleMouseDownRotate: function( event ) {
+	handleMouseDownRotate( event ) {
 
 		//console.log( 'handleMouseDownRotate' );
 
 		this.rotateStart.set( event.clientX, event.clientY );
 
-	},
+	}
 
-	handleMouseDownDolly: function( event ) {
+	handleMouseDownDolly( event ) {
 
 		//console.log( 'handleMouseDownDolly' );
 
 		this.dollyStart.set( event.clientX, event.clientY );
 
-	},
+	}
 
-	handleMouseDownPan: function( event ) {
+	handleMouseDownPan( event ) {
 
 		//console.log( 'handleMouseDownPan' );
 
 		this.panStart.set( event.clientX, event.clientY );
-	},
+	}
 
-	handleMouseMoveRotate: function( event ) {
+	handleMouseMoveRotate( event ) {
 
 		//console.log( 'handleMouseMoveRotate' );
 
 		this.rotateEnd.set( event.clientX, event.clientY );
 		this.rotateDelta.subVectors( this.rotateEnd, this.rotateStart );
 
-		//var element = this.domElement === document ? this.domElement.body : this.domElement;
+		//const element = this.domElement === document ? this.domElement.body : this.domElement;
 
 		//use the mouse target not the renderer element.
-		var element = this.domElement === document ? this.domElement.body : event.target;
+		const element = this.domElement === document ? this.domElement.body : event.target;
 
 		// rotating across whole screen goes 360 degrees around
 		this.rotateLeft( 2 * Math.PI * this.rotateDelta.x / element.clientWidth * this.rotateSpeed );
@@ -589,9 +574,9 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		this.update();
 
-	},
+	}
 
-	handleMouseMoveDolly: function( event ) {
+	handleMouseMoveDolly( event ) {
 
 		//console.log( 'handleMouseMoveDolly' );
 
@@ -613,9 +598,9 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		this.update();
 
-	},
+	}
 
-	handleMouseMovePan: function( event ) {
+	handleMouseMovePan( event ) {
 
 		//console.log( 'handleMouseMovePan' );
 
@@ -629,20 +614,20 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		this.update();
 
-	},
+	}
 
 
-	handleMouseUp: function( event ) {
+	handleMouseUp( event ) {
 
 		//console.log( 'handleMouseUp' );
 
-	},
+	}
 
-	handleMouseWheel: function( event ) {
+	handleMouseWheel( event ) {
 
 		//console.log( 'handleMouseWheel' );
 
-		var delta = 0;
+		let delta = 0;
 
 		if ( event.wheelDelta !== undefined ) {
 
@@ -670,19 +655,19 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		this.update();
 
-	},
+	}
 
 	//
 	// event handlers - FSM: listen for events and reset state
 	//
 	/*
-	 onElemMouseDown: function(event) {
+	 onElemMouseDown(event) {
 
 	 if (event.target !== this.domElement) return;
 	 this.onMouseDown(event);
 	 }*/
 
-	onMouseDown: function( event ) {
+	onMouseDown( event ) {
 
 		if ( this.enabled === false ) return;
 
@@ -723,22 +708,21 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		if ( this.state !== STATE.NONE ) {
 
-			document.addEventListener( 'mousemove', function onMoveCheck() {
+			const onMoveCheck = () => {
 				this.dispatchStart();
 				document.removeEventListener( 'mousemove', onMoveCheck);
-			}.bind(this), false );
+			};
+
+			document.addEventListener( 'mousemove', onMoveCheck , false );
 
 			document.addEventListener( 'mousemove', this.onMouseMoveRef, false );
 			document.addEventListener( 'mouseup', this.onMouseUpRef, false );
 			document.addEventListener( 'mouseout', this.onMouseUpRef, false );
-
-
 		}
 
-	},
+	}
 
-
-	onMouseMove: function( event ) {
+	onMouseMove( event ) {
 
 		if (this.enabled === false) return;
 
@@ -764,9 +748,9 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		}
 
-	},
+	}
 
-	onMouseUp: function( event ) {
+	onMouseUp( event ) {
 
 		if ( this.enabled === false ) return;
 
@@ -783,10 +767,10 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 		//cancel the active element
 		this.activeElement = null;
 
-	},
+	}
 
 
-	onMouseWheel: function( event ) {
+	onMouseWheel( event ) {
 
 		if ( this.enabled === false || this.enableZoom === false || ( this.state !== STATE.NONE && this.state !== STATE.ROTATE ) ) return;
 
@@ -798,10 +782,9 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 		this.dispatchStart();
 		this.dispatchEnd();
 
-	},
+	}
 
-
-	onKeyDown: function( event ) {
+	onKeyDown( event ) {
 
 		if ( this.enabled === false || this.enableKeys === false ) return;
 
@@ -810,15 +793,13 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		this.handleKeyDown( event );
 
-	},
+	}
 
-
-
-	onContextMenu: function(event) {
+	onContextMenu(event) {
 		event.preventDefault();
-	},
+	}
 
-	connect: function() {
+	connect() {
 
 		this.enabled = true;
 
@@ -827,15 +808,15 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		this.domElement.addEventListener( 'contextmenu', this.onContextMenu, false );
 
-		this.onMouseDownRef = this.onMouseDown.bind(this),
-			this.onMouseWheelRef = this.onMouseWheel.bind(this),
-			this.onMouseWheelRef = this.onMouseWheel.bind(this),
-			this.onMouseMoveRef =  this.onMouseMove.bind(this),
-			this.onMouseUpRef = this.onMouseUp.bind(this),
-			this.onTouchStartRef = this.onTouchStart.bind(this),
-			this.onTouchEndRef = this.onTouchEnd.bind(this),
-			this.onTouchMoveRef = this.onTouchMove.bind(this),
-			this.onKeyDownRef = this.onKeyDown.bind(this);
+		this.onMouseDownRef = (event) => this.onMouseDown(event),
+			this.onMouseWheelRef = (event) => this.onMouseWheel(event),
+			this.onMouseWheelRef = (event) => this.onMouseWheel(event),
+			this.onMouseMoveRef =  (event) => this.onMouseMove(event),
+			this.onMouseUpRef = (event) => this.onMouseUp(event),
+			this.onTouchStartRef = (event) => this.onTouchStart(event),
+			this.onTouchEndRef = (event) => this.onTouchEnd(event),
+			this.onTouchMoveRef = (event) => this.onTouchMove(event),
+			this.onKeyDownRef = (event) => this.onKeyDown(event);
 
 		this.domElement.addEventListener( 'mousedown', this.onMouseDownRef, false );
 		this.domElement.addEventListener( 'mousewheel', this.onMouseWheelRef, false );
@@ -846,9 +827,9 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		window.addEventListener( 'keydown', this.onKeyDownRef, false );
 
-	},
+	}
 
-	disconnect: function() {
+	disconnect() {
 
 		this.enabled = false;
 
@@ -871,10 +852,17 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		//this.dispatchEvent( { type: 'dispose' } ); // should this be added here?
 
-	},
+	}
 
+	saveState () {
 
-	reset: function () {
+		this.target0.copy( this.target );
+		this.position0.copy( this.object.position );
+		this.zoom0 = this.object.zoom;
+
+	}
+
+	reset () {
 
 		this.target.copy( this.target0 );
 		this.object.position.copy( this.position0 );
@@ -887,12 +875,12 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		this.state = STATE.NONE;
 
-	},
+	}
 
 	// this method is exposed, but perhaps it would be better if we can make it private...
-	update: function() {
+	update() {
 
-		var offset = new THREE.Vector3(),
+		const offset = new THREE.Vector3(),
 
 		// so camera.up is the orbit axis
 			quat = new THREE.Quaternion().setFromUnitVectors( this.object.up, new THREE.Vector3( 0, 1, 0 ) ),
@@ -978,21 +966,20 @@ Object.assign( OrbitControls.prototype, EventDispatcher.prototype, {
 
 		return false;
 
-	},
+	}
 
-	dispatchStart: function() {
+	dispatchStart() {
 		this.dispatchEvent({ type: "start" });
-	},
+	}
 
-	dispatchChange: function() {
+	dispatchChange() {
 		this.dispatchEvent({ type: "change" });
-	},
+	}
 
-	dispatchEnd: function() {
+	dispatchEnd() {
 		this.dispatchEvent({ type: "end" });
 	}
 
-} );
-
+}
 
 export { OrbitControls };
