@@ -104,6 +104,18 @@ class OrbitControls extends EventDispatcher {
 		this.dollyEnd = new THREE.Vector2(),
 		this.dollyDelta = new THREE.Vector2();
 
+		this.passiveEvent = false;
+		this.nonPassiveEvent = false;
+		try {
+		    var opts = Object.defineProperty({}, 'passive', {
+		        get: () => {
+		            this.passiveEvent = { passive: true };
+		            this.nonPassiveEvent = { passive: false };
+		        }
+		    });
+		    window.addEventListener("test", null, opts);
+		} catch (e) { }
+
 		this.connect();
 
 		// force an update at start
@@ -462,7 +474,7 @@ class OrbitControls extends EventDispatcher {
 				this.dispatchStart();
 			};
 
-			this.domElement.addEventListener( 'touchmove', onTouchMoveCheck);
+			this.domElement.addEventListener( 'touchmove', onTouchMoveCheck, this.passiveEvent);
 		}
 
 	}
@@ -471,8 +483,8 @@ class OrbitControls extends EventDispatcher {
 
 		if ( this.enabled === false ) return;
 
-		event.preventDefault();
-		event.stopPropagation();
+		//event.preventDefault();
+		//event.stopPropagation();
 
 		switch ( event.touches.length ) {
 
@@ -674,7 +686,7 @@ class OrbitControls extends EventDispatcher {
 		//disable events when triggered by overlayed elements.
 		if (this.domElement !== event.target) return;
 
-		event.preventDefault();
+		//event.preventDefault();
 
 		//reset the damping factor for mouse controls
 		this.dampingFactor = this.mouseDampingFactor;
@@ -713,11 +725,11 @@ class OrbitControls extends EventDispatcher {
 				document.removeEventListener( 'mousemove', onMoveCheck);
 			};
 
-			document.addEventListener( 'mousemove', onMoveCheck , false );
+			document.addEventListener( 'mousemove', onMoveCheck , this.passiveEvent );
 
-			document.addEventListener( 'mousemove', this.onMouseMoveRef, false );
-			document.addEventListener( 'mouseup', this.onMouseUpRef, false );
-			document.addEventListener( 'mouseout', this.onMouseUpRef, false );
+			document.addEventListener( 'mousemove', this.onMouseMoveRef, this.passiveEvent );
+			document.addEventListener( 'mouseup', this.onMouseUpRef, this.passiveEvent );
+			document.addEventListener( 'mouseout', this.onMouseUpRef, this.passiveEvent );
 		}
 
 	}
@@ -726,7 +738,7 @@ class OrbitControls extends EventDispatcher {
 
 		if (this.enabled === false) return;
 
-		event.preventDefault();
+		//event.preventDefault();
 
 		if (this.state === STATE.ROTATE) {
 
@@ -756,9 +768,9 @@ class OrbitControls extends EventDispatcher {
 
 		this.handleMouseUp( event );
 
-		document.removeEventListener( 'mousemove', this.onMouseMoveRef, false );
-		document.removeEventListener( 'mouseup', this.onMouseUpRef, false );
-		document.removeEventListener( 'mouseout', this.onMouseUpRef, false );
+		document.removeEventListener( 'mousemove', this.onMouseMoveRef, this.passiveEvent );
+		document.removeEventListener( 'mouseup', this.onMouseUpRef, this.passiveEvent );
+		document.removeEventListener( 'mouseout', this.onMouseUpRef, this.passiveEvent );
 
 		this.dispatchEnd();
 
@@ -774,8 +786,8 @@ class OrbitControls extends EventDispatcher {
 
 		if ( this.enabled === false || this.enableZoom === false || ( this.state !== STATE.NONE && this.state !== STATE.ROTATE ) ) return;
 
-		event.preventDefault();
-		event.stopPropagation();
+		//event.preventDefault();
+		//event.stopPropagation();
 
 		this.handleMouseWheel( event );
 
@@ -806,7 +818,7 @@ class OrbitControls extends EventDispatcher {
 		//reset the controls for when switching out of VRControls
 		this.reset();
 
-		this.domElement.addEventListener( 'contextmenu', this.onContextMenu, false );
+		this.domElement.addEventListener( 'contextmenu', this.onContextMenu, this.nonPassiveEvent );
 
 		this.onMouseDownRef = (event) => this.onMouseDown(event),
 			this.onMouseWheelRef = (event) => this.onMouseWheel(event),
@@ -818,14 +830,14 @@ class OrbitControls extends EventDispatcher {
 			this.onTouchMoveRef = (event) => this.onTouchMove(event),
 			this.onKeyDownRef = (event) => this.onKeyDown(event);
 
-		this.domElement.addEventListener( 'mousedown', this.onMouseDownRef, false );
-		this.domElement.addEventListener( 'mousewheel', this.onMouseWheelRef, false );
-		this.domElement.addEventListener( 'MozMousePixelScroll', this.onMouseWheelRef, false ); // firefox
-		this.domElement.addEventListener( 'touchstart', this.onTouchStartRef, false );
-		this.domElement.addEventListener( 'touchend', this.onTouchEndRef, false );
-		this.domElement.addEventListener( 'touchmove', this.onTouchMoveRef, false );
+		this.domElement.addEventListener( 'mousedown', this.onMouseDownRef, this.passiveEvent );
+		this.domElement.addEventListener( 'mousewheel', this.onMouseWheelRef, this.passiveEvent );
+		this.domElement.addEventListener( 'MozMousePixelScroll', this.onMouseWheelRef, this.passiveEvent ); // firefox
+		this.domElement.addEventListener( 'touchstart', this.onTouchStartRef, this.passiveEvent);
+		this.domElement.addEventListener( 'touchend', this.onTouchEndRef, this.passiveEvent );
+		this.domElement.addEventListener( 'touchmove', this.onTouchMoveRef, this.passiveEvent );
 
-		window.addEventListener( 'keydown', this.onKeyDownRef, false );
+		window.addEventListener( 'keydown', this.onKeyDownRef, this.passiveEvent );
 
 	}
 
@@ -836,19 +848,19 @@ class OrbitControls extends EventDispatcher {
 		//reset the controls for when switching to VRControls
 		this.reset();
 
-		this.domElement.removeEventListener( 'contextmenu', this.onContextMenu, false );
-		this.domElement.removeEventListener( 'mousedown', this.onMouseDownRef, false );
-		this.domElement.removeEventListener( 'mousewheel', this.onMouseWheelRef , false );
-		this.domElement.removeEventListener( 'MozMousePixelScroll', this.onMouseWheelRef, false ); // firefox
+		this.domElement.removeEventListener( 'contextmenu', this.onContextMenu);
+		this.domElement.removeEventListener( 'mousedown', this.onMouseDownRef);
+		this.domElement.removeEventListener( 'mousewheel', this.onMouseWheelRef );
+		this.domElement.removeEventListener( 'MozMousePixelScroll', this.onMouseWheelRef ); // firefox
 
-		this.domElement.removeEventListener( 'touchstart', this.onTouchStartRef, false );
-		this.domElement.removeEventListener( 'touchend', this.onTouchEndRef, false );
-		this.domElement.removeEventListener( 'touchmove', this.onTouchMoveRef, false );
+		this.domElement.removeEventListener( 'touchstart', this.onTouchStartRef);
+		this.domElement.removeEventListener( 'touchend', this.onTouchEndRef );
+		this.domElement.removeEventListener( 'touchmove', this.onTouchMoveRef );
 
-		document.removeEventListener( 'mousemove', this.onMouseMove, false );
-		document.removeEventListener( 'mouseup', this.onMouseUp, false );
+		document.removeEventListener( 'mousemove', this.onMouseMove);
+		document.removeEventListener( 'mouseup', this.onMouseUp);
 
-		window.removeEventListener( 'keydown', this.onKeyDown, false );
+		window.removeEventListener( 'keydown', this.onKeyDown);
 
 		//this.dispatchEvent( { type: 'dispose' } ); // should this be added here?
 
