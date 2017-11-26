@@ -641,7 +641,19 @@ class OrbitControls extends EventDispatcher {
 
 		let delta = 0;
 
-		if ( event.wheelDelta !== undefined ) {
+		//console.log(event.deltaY );
+
+		if ( event.deltaY < 0 ) {
+
+			this.dollyOut(this.getZoomScale() );
+
+		} else if ( event.deltaY > 0 ) {
+
+			this.dollyIn(this.getZoomScale() );
+
+		}
+
+		/*if ( event.wheelDelta !== undefined ) {
 
 			// WebKit / Opera / Explorer 9
 
@@ -653,9 +665,9 @@ class OrbitControls extends EventDispatcher {
 
 			delta = - event.detail;
 
-		}
+		}*/
 
-		if ( delta > 0 ) {
+		/*if ( delta > 0 ) {
 
 			this.dollyOut(this.getZoomScale() );
 
@@ -663,7 +675,7 @@ class OrbitControls extends EventDispatcher {
 
 			this.dollyIn(this.getZoomScale() );
 
-		}
+		}*/
 
 		this.update();
 
@@ -786,8 +798,8 @@ class OrbitControls extends EventDispatcher {
 
 		if ( this.enabled === false || this.enableZoom === false || ( this.state !== STATE.NONE && this.state !== STATE.ROTATE ) ) return;
 
-		//event.preventDefault();
-		//event.stopPropagation();
+		event.preventDefault();
+		event.stopPropagation();
 
 		this.handleMouseWheel( event );
 
@@ -831,7 +843,7 @@ class OrbitControls extends EventDispatcher {
 			this.onKeyDownRef = (event) => this.onKeyDown(event);
 
 		this.domElement.addEventListener( 'mousedown', this.onMouseDownRef, this.passiveEvent );
-		this.domElement.addEventListener( 'mousewheel', this.onMouseWheelRef, this.passiveEvent );
+		this.domElement.addEventListener( 'mousewheel', this.onMouseWheelRef, this.nonPassiveEvent );
 		this.domElement.addEventListener( 'MozMousePixelScroll', this.onMouseWheelRef, this.passiveEvent ); // firefox
 		this.domElement.addEventListener( 'touchstart', this.onTouchStartRef, this.passiveEvent);
 		this.domElement.addEventListener( 'touchend', this.onTouchEndRef, this.passiveEvent );
