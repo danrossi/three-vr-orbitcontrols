@@ -820,9 +820,9 @@ class OrbitControls extends EventDispatcher {
 
 	}
 
-	onContextMenu(event) {
+	//onContextMenu(event) {
 		//event.preventDefault();
-	}
+	//}
 
 	connect() {
 
