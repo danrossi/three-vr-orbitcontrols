@@ -1,5 +1,6 @@
 import { EventDispatcher } from '../../three.js/src/core/EventDispatcher';
 
+
 /**
  * OrbitControls for mouse and keyboard controls.
  * Changes to turn it into a three.js module for bundling.
@@ -820,7 +821,7 @@ class OrbitControls extends EventDispatcher {
 	}
 
 	onContextMenu(event) {
-		event.preventDefault();
+		//event.preventDefault();
 	}
 
 	connect() {
@@ -830,7 +831,7 @@ class OrbitControls extends EventDispatcher {
 		//reset the controls for when switching out of VRControls
 		this.reset();
 
-		this.domElement.addEventListener( 'contextmenu', this.onContextMenu, this.nonPassiveEvent );
+		//this.domElement.addEventListener( 'contextmenu', this.onContextMenu, this.nonPassiveEvent );
 
 		this.onMouseDownRef = (event) => this.onMouseDown(event),
 			this.onMouseWheelRef = (event) => this.onMouseWheel(event),
@@ -860,7 +861,7 @@ class OrbitControls extends EventDispatcher {
 		//reset the controls for when switching to VRControls
 		this.reset();
 
-		this.domElement.removeEventListener( 'contextmenu', this.onContextMenu);
+		//this.domElement.removeEventListener( 'contextmenu', this.onContextMenu);
 		this.domElement.removeEventListener( 'mousedown', this.onMouseDownRef);
 		this.domElement.removeEventListener( 'mousewheel', this.onMouseWheelRef );
 		this.domElement.removeEventListener( 'MozMousePixelScroll', this.onMouseWheelRef ); // firefox
