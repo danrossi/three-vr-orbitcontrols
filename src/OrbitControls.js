@@ -1,15 +1,22 @@
 import { EventDispatcher } from '../../three.js/src/core/EventDispatcher';
-
+import { Quaternion } from '../../three.js/src/math/Quaternion';
+import { Vector2 } from '../../three.js/src/math/Vector2';
+import { Vector3 } from '../../three.js/src/math/Vector3';
+import { Vector4 } from '../../three.js/src/math/Vector4';
+import { Spherical } from '../../three.js/src/math/Spherical';
+import { PerspectiveCamera } from '../../three.js/src/cameras/PerspectiveCamera';
+import { _Math } from '../../three.js/src/math/Math';
+import { MOUSE } from '../../three.js/src/constants';
 
 /**
  * OrbitControls for mouse and keyboard controls.
- * Changes to turn it into a three.js module for bundling.
+ * Changes to turn it into a js module for bundling.
  * @author qiao / https://github.com/qiao
  * @author mrdoob / http://mrdoob.com
  * @author alteredq / http://alteredqualia.com/
  * @author WestLangley / http://github.com/WestLangley
  * @author erich666 / http://erichaines.com
- * @author danrossi / https://www.electroteque.org
+ * @author danrossi / https://www.electroteque.orgSAZdxf
  */
 
 // This set of controls performs orbiting, dollying (zooming), and panning.
@@ -21,7 +28,7 @@ import { EventDispatcher } from '../../three.js/src/core/EventDispatcher';
 
 
 const EPS = 0.000001,
-STATE = { NONE : - 1, ROTATE : 0, DOLLY : 1, PAN : 2, TOUCH_ROTATE : 3, TOUCH_DOLLY : 4, TOUCH_PAN : 5 };
+STATE = { NONE: - 1, ROTATE: 0, DOLLY: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_DOLLY_PAN: 4 };
 
 class OrbitControls extends EventDispatcher {
 	constructor( object, domElement) {
@@ -33,7 +40,7 @@ class OrbitControls extends EventDispatcher {
 		// Set to false to disable this control
 		this.enabled = true;
 		// "target" sets the location of focus, where the object orbits around
-		this.target = new THREE.Vector3(),
+		this.target = new Vector3(),
 		// How far you can dolly in and out ( PerspectiveCamera only )
 		this.minDistance = 0,
 		this.maxDistance = Infinity,
@@ -51,7 +58,10 @@ class OrbitControls extends EventDispatcher {
 		// Set to true to enable damping (inertia)
 		// If damping is enabled, you must call controls.update() in your animation loop
 		this.enableDamping = false,
-		this.dampingFactor = 0.25,
+		this.dampingFactor = 0.10,
+		this.mouseDampingFactor = 0.10,
+		//this.releaseDampingFactor = 0.05,
+		//this.releaseDampingDelay = 2000,
 		//the damping factor for key controls. This needs a more smoother response.
 		this.keyDampingFactor = 0.10,
 		// This option actually enables dollying in and out; left as "zoom" for backwards compatibility.
@@ -64,6 +74,7 @@ class OrbitControls extends EventDispatcher {
 
 		// Set to false to disable panning
 		this.enablePan = true,
+		this.screenSpacePanning = false, // if true, pan in screen-space
 		this.keyPanSpeed = 7.0,	// pixels moved per arrow key push
 
 		// Set to true to automatically rotate around the target
@@ -78,7 +89,7 @@ class OrbitControls extends EventDispatcher {
 		this.keys = { left: 37, up: 38, right: 39, bottom: 40 },
 
 		// Mouse buttons
-		this.mouseButtons = { ORBIT: THREE.MOUSE.LEFT, ZOOM: THREE.MOUSE.MIDDLE, PAN: THREE.MOUSE.RIGHT },
+		this.mouseButtons = { ORBIT: MOUSE.LEFT, ZOOM: MOUSE.MIDDLE, PAN: MOUSE.RIGHT },
 
 		// for reset
 		this.target0 = this.target.clone(),
@@ -86,29 +97,29 @@ class OrbitControls extends EventDispatcher {
 		this.zoom0 = this.object.zoom,
 		this.state = STATE.NONE,
 	// current position in spherical coordinates
-		this.spherical = new THREE.Spherical(),
-		this.sphericalDelta = new THREE.Spherical(),
+		this.spherical = new Spherical(),
+		this.sphericalDelta = new Spherical(),
 
 		this.scale = 1,
-		this.panOffset = new THREE.Vector3(),
+		this.panOffset = new Vector3(),
 		this.zoomChanged = false,
 
-		this.rotateStart = new THREE.Vector2(),
-		this.rotateEnd = new THREE.Vector2(),
-		this.rotateDelta = new THREE.Vector2(),
+		this.rotateStart = new Vector2(),
+		this.rotateEnd = new Vector2(),
+		this.rotateDelta = new Vector2(),
 
-		this.panStart = new THREE.Vector2(),
-		this.panEnd = new THREE.Vector2(),
-		this.panDelta = new THREE.Vector2(),
+		this.panStart = new Vector2(),
+		this.panEnd = new Vector2(),
+		this.panDelta = new Vector2(),
 
-		this.dollyStart = new THREE.Vector2(),
-		this.dollyEnd = new THREE.Vector2(),
-		this.dollyDelta = new THREE.Vector2();
+		this.dollyStart = new Vector2(),
+		this.dollyEnd = new Vector2(),
+		this.dollyDelta = new Vector2();
 
 		this.passiveEvent = false;
 		this.nonPassiveEvent = false;
 		try {
-		    var opts = Object.defineProperty({}, 'passive', {
+		    const opts = Object.defineProperty({}, 'passive', {
 		        get: () => {
 		            this.passiveEvent = { passive: true };
 		            this.nonPassiveEvent = { passive: false };
@@ -150,7 +161,7 @@ class OrbitControls extends EventDispatcher {
 
 	panLeft(distance, objectMatrix) {
 
-		const v = new THREE.Vector3();
+		const v = new Vector3();
 
 		v.setFromMatrixColumn( objectMatrix, 0 ); // get X column of objectMatrix
 		v.multiplyScalar( - distance );
@@ -160,10 +171,14 @@ class OrbitControls extends EventDispatcher {
 
 	panUp(distance, objectMatrix) {
 
-		const v = new THREE.Vector3();
+		const v = new Vector3();
 
-		v.setFromMatrixColumn( objectMatrix, 1 ); // get Y column of objectMatrix
-		v.multiplyScalar( distance );
+		if ( this.screenSpacePanning === true ) {
+			v.setFromMatrixColumn( objectMatrix, 1 );
+		} else {
+			v.setFromMatrixColumn( objectMatrix, 0 );
+			v.crossVectors( this.object.up, v );
+		}
 
 		this.panOffset.add( v );
 	}
@@ -171,11 +186,11 @@ class OrbitControls extends EventDispatcher {
 	// deltaX and deltaY are in pixels; right and down are positive
 	pan(deltaX, deltaY) {
 
-		const offset = new THREE.Vector3();
+		const offset = new Vector3();
 
 		const element = this.domElement === document ? this.domElement.body : this.domElement;
 
-		if ( this.object instanceof THREE.PerspectiveCamera ) {
+		//if ( this.object instanceof PerspectiveCamera ) {
 
 			// perspective
 			const position = this.object.position;
@@ -189,30 +204,30 @@ class OrbitControls extends EventDispatcher {
 			this.panLeft( 2 * deltaX * targetDistance / element.clientHeight, this.object.matrix );
 			this.panUp( 2 * deltaY * targetDistance / element.clientHeight, this.object.matrix );
 
-		} else if ( this.object instanceof THREE.OrthographicCamera ) {
+		/*} else if ( this.object instanceof OrthographicCamera ) {
 
 			// orthographic
 			this.panLeft( deltaX * ( this.object.right - this.object.left ) / this.object.zoom / element.clientWidth, this.object.matrix );
 			this.panUp( deltaY * ( this.object.top - this.object.bottom ) / this.object.zoom / element.clientHeight, this.object.matrix );
-
-		} else {
+*/
+		//} //else {
 
 			// camera neither orthographic nor perspective
 			//console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - pan disabled.' );
-			this.enablePan = false;
+			//this.enablePan = false;
 
-		}
+		//}
 
 
 	}
 
 	dollyIn( dollyScale ) {
 
-		if ( this.object instanceof THREE.PerspectiveCamera ) {
+		//if ( this.object instanceof PerspectiveCamera ) {
 
 			this.scale /= dollyScale;
 
-		} else if ( this.object instanceof THREE.OrthographicCamera ) {
+		/*} else if ( this.object instanceof OrthographicCamera ) {
 
 			this.object.zoom = Math.max( this.minZoom, Math.min( this.maxZoom, this.object.zoom * dollyScale ) );
 			this.object.updateProjectionMatrix();
@@ -223,28 +238,28 @@ class OrbitControls extends EventDispatcher {
 			//console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled.' );
 			this.enableZoom = false;
 
-		}
+		}*/
 
 	}
 
 	dollyOut( dollyScale ) {
 
-		if ( this.object instanceof THREE.PerspectiveCamera ) {
+		//if ( this.object instanceof PerspectiveCamera ) {
 
 			this.scale *= dollyScale;
 
-		} else if ( this.object instanceof THREE.OrthographicCamera ) {
+		//} /*else if ( this.object instanceof OrthographicCamera ) {
 
 			this.object.zoom = Math.max( this.minZoom, Math.min( this.maxZoom, this.object.zoom / dollyScale ) );
 			this.object.updateProjectionMatrix();
 			this.zoomChanged = true;
 
-		} else {
+		//} else {
 
 			//console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled.' );
-			this.enableZoom = false;
+			//this.enableZoom = false;
 
-		}
+		//}*/
 
 	}
 
@@ -254,7 +269,7 @@ class OrbitControls extends EventDispatcher {
 	 * @param speed
 	 */
 	rotateVertical(speed) {
-		this.rotateUp(THREE.Math.degToRad(speed));
+		this.rotateUp(_Math.degToRad(speed));
 		this.update();
 	}
 
@@ -263,7 +278,7 @@ class OrbitControls extends EventDispatcher {
 	 * @param speed
 	 */
 	rotateHorizontal(speed) {
-		this.rotateLeft(THREE.Math.degToRad(speed));
+		this.rotateLeft(_Math.degToRad(speed));
 		this.update();
 	}
 
@@ -343,78 +358,66 @@ class OrbitControls extends EventDispatcher {
 		this.rotateStart.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
 	}
 
-	handleTouchStartDolly( event ) {
-		//console.log( 'handleTouchStartDolly' );
+	handleTouchStartDollyPan( event ) {
+
 		const dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX,
-			dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY,
-			distance = Math.sqrt( dx * dx + dy * dy );
+			dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
 
-		this.dollyStart.set( 0, distance );
-	}
+		if ( this.enableZoom ) {
+			const distance = Math.sqrt( dx * dx + dy * dy );
+			this.dollyStart.set( 0, distance );
+		}
 
-	handleTouchStartPan( event ) {
-		//console.log( 'handleTouchStartPan' );
-		this.panStart.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
-
+		if ( this.enablePan ) {
+			this.panStart.set( 0.5 * dx,  0.5 * dy );
+		}
 	}
 
 	handleTouchMoveRotate( event ) {
 		//console.log( 'handleTouchMoveRotate' );
 		this.rotateEnd.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
-		this.rotateDelta.subVectors( this.rotateEnd, this.rotateStart );
+		this.rotateDelta.subVectors( this.rotateEnd, this.rotateStart ).multiplyScalar( this.rotateSpeed );
 
 		const element = this.domElement === document ? this.domElement.body : this.domElement;
 
 		// rotating across whole screen goes 360 degrees around
-		this.rotateLeft( 2 * Math.PI * this.rotateDelta.x / element.clientWidth * this.rotateSpeed );
+		this.rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientHeight );
 
 		// rotating up and down along whole screen attempts to go 360, but limited to 180
-		this.rotateUp( 2 * Math.PI * this.rotateDelta.y / element.clientHeight * this.rotateSpeed );
+		this.rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight );
 
 		this.rotateStart.copy( this.rotateEnd );
 
 		this.update();
 	}
 
-	handleTouchMoveDolly( event ) {
+	handleTouchMoveDollyPan( event ) {
 
 		//console.log( 'handleTouchMoveDolly' );
 
 		const dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX,
-		dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY,
-		distance = Math.sqrt( dx * dx + dy * dy );
+		dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
 
-		this.dollyEnd.set( 0, distance );
+		if ( this.enableZoom ) {
+			const distance = Math.sqrt( dx * dx + dy * dy );
 
-		this.dollyDelta.subVectors( this.dollyEnd, this.dollyStart );
+			this.dollyEnd.set( 0, distance );
+			this.dollyDelta.subVectors( this.dollyEnd, this.dollyStart );
 
-		if ( this.dollyDelta.y > 0 ) {
+			this.dollyIn( this.dollyDelta.y );
 
-			this.dollyOut( this.getZoomScale() );
-
-		} else if ( this.dollyDelta.y < 0 ) {
-
-			this.dollyIn( this.getZoomScale() );
-
+			this.dollyStart.copy( this.dollyEnd );
 		}
 
-		this.dollyStart.copy( this.dollyEnd );
+		if (this.enablePan) {
+			this.panEnd.set( 0.5 * dx, 0.5 * dy );
 
-		this.update();
+			this.panDelta.subVectors( this.panEnd, this.panStart ).multiplyScalar( this.panSpeed );
 
-	}
+			this.pan( this.panDelta.x, this.panDelta.y );
 
-	handleTouchMovePan( event ) {
-
-		//console.log( 'handleTouchMovePan' );
-
-		this.panEnd.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
-
-		this.panDelta.subVectors( this.panEnd, this.panStart );
-
-		this.pan( this.panDelta.x, this.panDelta.y );
-
-		this.panStart.copy( this.panEnd );
+			this.panStart.copy( this.panEnd );
+		}
 
 		this.update();
 	}
@@ -430,6 +433,8 @@ class OrbitControls extends EventDispatcher {
 
 		if ( this.enabled === false ) return;
 
+		this.activeElement = event.target;
+
 		switch ( event.touches.length ) {
 
 			case 1:	// one-fingered touch: rotate
@@ -444,21 +449,11 @@ class OrbitControls extends EventDispatcher {
 
 			case 2:	// two-fingered touch: dolly
 
-				if ( this.enableZoom === false ) return;
+				if ( this.enableZoom === false && this.enablePan === false ) return;
 
-				this.handleTouchStartDolly( event );
+				this.handleTouchStartDollyPan( event );
 
-				this.state = STATE.TOUCH_DOLLY;
-
-				break;
-
-			case 3: // three-fingered touch: pan
-
-				if ( this.enablePan === false ) return;
-
-				this.handleTouchStartPan( event );
-
-				this.state = STATE.TOUCH_PAN;
+				this.state = STATE.TOUCH_DOLLY_PAN;
 
 				break;
 
@@ -492,8 +487,7 @@ class OrbitControls extends EventDispatcher {
 			case 1: // one-fingered touch: rotate
 
 				if ( this.enableRotate === false ) return;
-				//if ( this.state !== STATE.TOUCH_ROTATE ) return; // is this needed?...
-
+				if ( this.state !== STATE.TOUCH_ROTATE ) return; // is this needed?...
 
 				//console.log("HANDLE ROTATE");
 
@@ -505,19 +499,10 @@ class OrbitControls extends EventDispatcher {
 
 				//console.log("HANDLE DOLLY");
 
-				if ( this.enableZoom === false ) return;
-				//if ( this.state !== STATE.TOUCH_DOLLY ) return; // is this needed?...
+				if ( this.enableZoom === false && this.enablePan === false) return;
+				if ( this.state !== STATE.TOUCH_DOLLY_PAN ) return; // is this needed?...
 
-				this.handleTouchMoveDolly( event );
-
-				break;
-
-			case 3: // three-fingered touch: pan
-
-				if ( this.enablePan === false ) return;
-				//if ( this.state !== STATE.TOUCH_PAN ) return; // is this needed?...
-
-				this.handleTouchMovePan( event );
+				this.handleTouchMoveDollyPan( event );
 
 				break;
 
@@ -536,6 +521,8 @@ class OrbitControls extends EventDispatcher {
 		this.handleTouchEnd( event );
 
 		this.dispatchEnd();
+
+		this.activeElement = null;
 
 		this.state = STATE.NONE;
 
@@ -570,7 +557,7 @@ class OrbitControls extends EventDispatcher {
 		//console.log( 'handleMouseMoveRotate' );
 
 		this.rotateEnd.set( event.clientX, event.clientY );
-		this.rotateDelta.subVectors( this.rotateEnd, this.rotateStart );
+		this.rotateDelta.subVectors( this.rotateEnd, this.rotateStart ).multiplyScalar( this.rotateSpeed );
 
 		//const element = this.domElement === document ? this.domElement.body : this.domElement;
 
@@ -578,10 +565,10 @@ class OrbitControls extends EventDispatcher {
 		const element = this.domElement === document ? this.domElement.body : event.target;
 
 		// rotating across whole screen goes 360 degrees around
-		this.rotateLeft( 2 * Math.PI * this.rotateDelta.x / element.clientWidth * this.rotateSpeed );
+		this.rotateLeft( 2 * Math.PI * this.rotateDelta.x / element.clientHeight );
 
 		// rotating up and down along whole screen attempts to go 360, but limited to 180
-		this.rotateUp( 2 * Math.PI * this.rotateDelta.y / element.clientHeight * this.rotateSpeed );
+		this.rotateUp(  2 * Math.PI * this.rotateDelta.y / element.clientHeight );
 
 		this.rotateStart.copy( this.rotateEnd );
 
@@ -699,13 +686,21 @@ class OrbitControls extends EventDispatcher {
 		//disable events when triggered by overlayed elements.
 		if (this.domElement !== event.target) return;
 
-		//event.preventDefault();
+		this.onMoveCheckRef = () => {
+			this.onMoveCheck(event);
+		};
 
-		//reset the damping factor for mouse controls
-		this.dampingFactor = this.mouseDampingFactor;
+		//check for mouse movement before starting controls
+		document.addEventListener( 'mousemove', this.onMoveCheckRef , this.passiveEvent );
 
-		this.activeElement = event.target;
+		//no movement and a mouse toggle remove the setup event
+		document.addEventListener( 'mouseup', () => { 
+			document.removeEventListener( 'mousemove', this.onMoveCheckRef , this.passiveEvent );
+		}, this.passiveEvent );
 
+	}
+
+	onMoveCheck(event) {
 
 		switch (event.button) {
 			case this.mouseButtons.ORBIT:
@@ -733,25 +728,24 @@ class OrbitControls extends EventDispatcher {
 
 		if ( this.state !== STATE.NONE ) {
 
-			const onMoveCheck = () => {
-				this.dispatchStart();
-				document.removeEventListener( 'mousemove', onMoveCheck);
-			};
+			this.dampingFactor = this.mouseDampingFactor;
+			this.activeElement = event.target;
 
-			document.addEventListener( 'mousemove', onMoveCheck , this.passiveEvent );
+			this.dispatchStart();
+			
+			document.removeEventListener( 'mousemove', this.onMoveCheckRef);
 
-			document.addEventListener( 'mousemove', this.onMouseMoveRef, this.passiveEvent );
+			document.addEventListener( 'mousemove', this.onMouseMoveRef, this.nonPassiveEvent);
 			document.addEventListener( 'mouseup', this.onMouseUpRef, this.passiveEvent );
 			document.addEventListener( 'mouseout', this.onMouseUpRef, this.passiveEvent );
 		}
-
 	}
 
 	onMouseMove( event ) {
 
 		if (this.enabled === false) return;
 
-		//event.preventDefault();
+		event.preventDefault();
 
 		if (this.state === STATE.ROTATE) {
 
@@ -870,8 +864,8 @@ class OrbitControls extends EventDispatcher {
 		this.domElement.removeEventListener( 'touchend', this.onTouchEndRef );
 		this.domElement.removeEventListener( 'touchmove', this.onTouchMoveRef );
 
-		document.removeEventListener( 'mousemove', this.onMouseMove);
-		document.removeEventListener( 'mouseup', this.onMouseUp);
+		//document.removeEventListener( 'mousemove', this.onMouseMove);
+		//document.removeEventListener( 'mouseup', this.onMouseUp);
 
 		window.removeEventListener( 'keydown', this.onKeyDown);
 
@@ -905,13 +899,13 @@ class OrbitControls extends EventDispatcher {
 	// this method is exposed, but perhaps it would be better if we can make it private...
 	update() {
 
-		const offset = new THREE.Vector3(),
+		const offset = new Vector3(),
 
 		// so camera.up is the orbit axis
-			quat = new THREE.Quaternion().setFromUnitVectors( this.object.up, new THREE.Vector3( 0, 1, 0 ) ),
+			quat = new Quaternion().setFromUnitVectors( this.object.up, new Vector3( 0, 1, 0 ) ),
 			quatInverse = quat.clone().inverse(),
-			lastPosition = new THREE.Vector3(),
-			lastQuaternion = new THREE.Quaternion(),
+			lastPosition = new Vector3(),
+			lastQuaternion = new Quaternion(),
 			position = this.object.position;
 
 		offset.copy( position ).sub( this.target );
