@@ -381,10 +381,10 @@ class OrbitControls extends EventDispatcher {
 		const element = this.domElement === document ? this.domElement.body : this.domElement;
 
 		// rotating across whole screen goes 360 degrees around
-		this.rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientHeight );
+		this.rotateLeft( 2 * Math.PI * this.rotateDelta.x / element.clientHeight );
 
 		// rotating up and down along whole screen attempts to go 360, but limited to 180
-		this.rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight );
+		this.rotateUp( 2 * Math.PI * this.rotateDelta.y / element.clientHeight );
 
 		this.rotateStart.copy( this.rotateEnd );
 
