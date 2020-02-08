@@ -5,8 +5,21 @@ import { Vector3 } from '../../three.js/src/math/Vector3';
 import { Vector4 } from '../../three.js/src/math/Vector4';
 import { Spherical } from '../../three.js/src/math/Spherical';
 import { PerspectiveCamera } from '../../three.js/src/cameras/PerspectiveCamera';
-import { _Math } from '../../three.js/src/math/Math';
+import { MathUtils } from '../../three.js/src/math/MathUtils';
 import { MOUSE } from '../../three.js/src/constants';
+
+/*
+import {
+	EventDispatcher,
+	Quaternion,
+	Spherical,
+	MathUtils,
+	Vector2,
+	Vector3,
+	MOUSE,
+	TOUCH
+} from "../../three.js/build/three.module.js";*/
+
 
 /**
  * OrbitControls for mouse and keyboard controls.
@@ -16,7 +29,7 @@ import { MOUSE } from '../../three.js/src/constants';
  * @author alteredq / http://alteredqualia.com/
  * @author WestLangley / http://github.com/WestLangley
  * @author erich666 / http://erichaines.com
- * @author danrossi / https://www.electroteque.orgSAZdxf
+ * @author danrossi / https://www.electroteque.org
  */
 
 // This set of controls performs orbiting, dollying (zooming), and panning.
@@ -269,7 +282,7 @@ class OrbitControls extends EventDispatcher {
 	 * @param speed
 	 */
 	rotateVertical(speed) {
-		this.rotateUp(_Math.degToRad(speed));
+		this.rotateUp(MathUtils.degToRad(speed));
 		this.update();
 	}
 
@@ -278,7 +291,7 @@ class OrbitControls extends EventDispatcher {
 	 * @param speed
 	 */
 	rotateHorizontal(speed) {
-		this.rotateLeft(_Math.degToRad(speed));
+		this.rotateLeft(MathUtils.degToRad(speed));
 		this.update();
 	}
 
@@ -896,7 +909,6 @@ class OrbitControls extends EventDispatcher {
 
 	}
 
-	// this method is exposed, but perhaps it would be better if we can make it private...
 	update() {
 
 		const offset = new Vector3(),
