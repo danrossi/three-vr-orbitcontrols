@@ -57,6 +57,7 @@ class OrbitControls extends EventDispatcher {
 		// How far you can dolly in and out ( PerspectiveCamera only )
 		this.minDistance = 0,
 		this.maxDistance = Infinity,
+		this.zoomin = false,
 		// How far you can zoom in and out ( OrthographicCamera only )
 		this.minZoom = 0,
 		this.maxZoom = Infinity,
@@ -240,6 +241,17 @@ class OrbitControls extends EventDispatcher {
 
 			this.scale /= dollyScale;
 
+			if (this.zoomin) {
+				this.object.zoom = Math.max( this.minZoom, Math.min( this.maxZoom, this.object.zoom / dollyScale ) );
+				this.object.updateProjectionMatrix();
+				this.zoomChanged = true;
+			}
+			
+
+			/*this.object.zoom = Math.max( this.minZoom, Math.min( this.maxZoom, this.object.zoom * dollyScale ) );
+			this.object.updateProjectionMatrix();
+			this.zoomChanged = true;*/
+
 		/*} else if ( this.object instanceof OrthographicCamera ) {
 
 			this.object.zoom = Math.max( this.minZoom, Math.min( this.maxZoom, this.object.zoom * dollyScale ) );
@@ -261,11 +273,20 @@ class OrbitControls extends EventDispatcher {
 
 			this.scale *= dollyScale;
 
+			if (this.zoomin) {
+				this.object.zoom = Math.max( 0.3, Math.min( this.maxZoom, this.object.zoom * dollyScale ) );
+				this.object.updateProjectionMatrix();
+				this.zoomChanged = true;
+			}
+
 		//} /*else if ( this.object instanceof OrthographicCamera ) {
 
-			this.object.zoom = Math.max( this.minZoom, Math.min( this.maxZoom, this.object.zoom / dollyScale ) );
+			/*this.object.zoom = Math.max( this.minZoom, Math.min( this.maxZoom, this.object.zoom / dollyScale ) );
 			this.object.updateProjectionMatrix();
-			this.zoomChanged = true;
+			this.zoomChanged = true;*/
+
+
+
 
 		//} else {
 
@@ -915,7 +936,7 @@ class OrbitControls extends EventDispatcher {
 
 		// so camera.up is the orbit axis
 			quat = new Quaternion().setFromUnitVectors( this.object.up, new Vector3( 0, 1, 0 ) ),
-			quatInverse = quat.clone().inverse(),
+			quatInverse = quat.clone().invert(),
 			lastPosition = new Vector3(),
 			lastQuaternion = new Quaternion(),
 			position = this.object.position;
