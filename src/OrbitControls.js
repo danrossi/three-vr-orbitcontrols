@@ -5,7 +5,7 @@ import { Vector3 } from '../../three.js/src/math/Vector3';
 import { Vector4 } from '../../three.js/src/math/Vector4';
 import { Spherical } from '../../three.js/src/math/Spherical';
 import { PerspectiveCamera } from '../../three.js/src/cameras/PerspectiveCamera';
-import { MathUtils } from '../../three.js/src/math/MathUtils';
+import * as MathUtils from '../../three.js/src/math/MathUtils';
 import { MOUSE } from '../../three.js/src/constants';
 
 /*
@@ -85,6 +85,7 @@ class OrbitControls extends EventDispatcher {
 		// Set to false to disable rotating
 		this.enableRotate = true,
 		this.rotateSpeed = 1.0,
+		this.rotateSpeedFactor = 3,
 
 		// Set to false to disable panning
 		this.enablePan = true,
@@ -326,7 +327,7 @@ class OrbitControls extends EventDispatcher {
 	 */
 	moveLeft() {
 		this.setKeyDampingFactor();
-		this.rotateHorizontal(this.rotateSpeed);
+		this.rotateHorizontal(this.rotateSpeed * this.rotateSpeedFactor);
 	}
 
 	/**
@@ -334,7 +335,7 @@ class OrbitControls extends EventDispatcher {
 	 */
 	moveRight() {
 		this.setKeyDampingFactor();
-		this.rotateHorizontal(-this.rotateSpeed);
+		this.rotateHorizontal(-this.rotateSpeed * this.rotateSpeedFactor);
 	}
 
 	/**
@@ -342,7 +343,7 @@ class OrbitControls extends EventDispatcher {
 	 */
 	moveDown() {
 		this.setKeyDampingFactor();
-		this.rotateVertical(-this.rotateSpeed);
+		this.rotateVertical(-this.rotateSpeed * this.rotateSpeedFactor);
 	}
 
 	/**
@@ -350,8 +351,22 @@ class OrbitControls extends EventDispatcher {
 	 */
 	moveUp() {
 		this.setKeyDampingFactor();
-		this.rotateVertical(this.rotateSpeed);
+		this.rotateVertical(this.rotateSpeed * this.rotateSpeedFactor);
 	}
+
+	zoomIn() {
+		this.dollyIn(this.getZoomScale() );
+
+		this.update();
+	}
+
+	zoomOut() {
+		this.dollyOut(this.getZoomScale() );
+		this.update();
+	}
+
+
+	
 
 
 
@@ -667,11 +682,14 @@ class OrbitControls extends EventDispatcher {
 
 		if ( event.deltaY < 0 ) {
 
-			this.dollyOut(this.getZoomScale() );
-
-		} else if ( event.deltaY > 0 ) {
+			//this.dollyOut(this.getZoomScale() );
 
 			this.dollyIn(this.getZoomScale() );
+
+		} else if ( event.deltaY > 0 ) {
+			this.dollyOut(this.getZoomScale() );
+
+			
 
 		}
 
@@ -718,7 +736,8 @@ class OrbitControls extends EventDispatcher {
 		if ( this.enabled === false ) return;
 
 		//disable events when triggered by overlayed elements.
-		if (this.domElement !== event.target) return;
+		//if (this.domElement !== event.target) return;
+		if (this.domElement !== event.target && this.domElement !== event.target.parentNode) return;
 
 		this.onMoveCheckRef = () => {
 			this.onMoveCheck(event);
