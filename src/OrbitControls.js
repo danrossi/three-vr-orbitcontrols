@@ -106,6 +106,8 @@ class OrbitControls extends EventDispatcher {
 		// Mouse buttons
 		this.mouseButtons = { ORBIT: MOUSE.LEFT, ZOOM: MOUSE.MIDDLE, PAN: MOUSE.RIGHT },
 
+		this.rotateDirectionLeft = true;
+
 		// for reset
 		this.target0 = this.target.clone(),
 		this.position0 = this.object.position.clone(),
@@ -168,6 +170,10 @@ class OrbitControls extends EventDispatcher {
 
 	rotateLeft( angle ) {
 		this.sphericalDelta.theta -= angle;
+	}
+
+	rotateRight( angle ) {
+		this.sphericalDelta.theta += angle;
 	}
 
 	rotateUp( angle ) {
@@ -430,8 +436,11 @@ class OrbitControls extends EventDispatcher {
 		const element = this.domElement === document ? this.domElement.body : this.domElement;
 
 		// rotating across whole screen goes 360 degrees around
-		this.rotateLeft( 2 * Math.PI * this.rotateDelta.x / element.clientHeight );
-
+		//rotate left or right
+		if (this.rotateDirectionLeft)
+			this.rotateLeft( 2 * Math.PI * this.rotateDelta.x / element.clientHeight );
+		else
+			this.rotateRight( 2 * Math.PI * this.rotateDelta.x / element.clientHeight );
 		// rotating up and down along whole screen attempts to go 360, but limited to 180
 		this.rotateUp( 2 * Math.PI * this.rotateDelta.y / element.clientHeight );
 
@@ -614,8 +623,11 @@ class OrbitControls extends EventDispatcher {
 		const element = this.domElement === document ? this.domElement.body : event.target;
 
 		// rotating across whole screen goes 360 degrees around
-		this.rotateLeft( 2 * Math.PI * this.rotateDelta.x / element.clientHeight );
-
+		//rotate left or right
+		if (this.rotateDirectionLeft)
+			this.rotateLeft( 2 * Math.PI * this.rotateDelta.x / element.clientHeight );
+		else
+			this.rotateRight( 2 * Math.PI * this.rotateDelta.x / element.clientHeight );
 		// rotating up and down along whole screen attempts to go 360, but limited to 180
 		this.rotateUp(  2 * Math.PI * this.rotateDelta.y / element.clientHeight );
 
