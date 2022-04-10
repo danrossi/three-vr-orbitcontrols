@@ -326,33 +326,37 @@ class OrbitControls extends EventDispatcher {
 	/**
 	 * Rotate left api
 	 */
-	moveLeft() {
+	moveLeft(deg = null) {
+		const angle = deg || this.rotateSpeed * this.rotateSpeedFactor;
 		this.setKeyDampingFactor();
-		this.rotateHorizontal(this.rotateSpeed * this.rotateSpeedFactor);
+		this.rotateHorizontal(angle);
 	}
 
 	/**
 	 * Rotate right api
 	 */
-	moveRight() {
+	moveRight(deg = null) {
+		const angle = deg || this.rotateSpeed * this.rotateSpeedFactor;
 		this.setKeyDampingFactor();
-		this.rotateHorizontal(-this.rotateSpeed * this.rotateSpeedFactor);
+		this.rotateHorizontal(-angle);
 	}
 
 	/**
 	 * Rotate down api
 	 */
-	moveDown() {
+	moveDown(deg = null) {
+		const angle = deg || this.rotateSpeed * this.rotateSpeedFactor;
 		this.setKeyDampingFactor();
-		this.rotateVertical(-this.rotateSpeed * this.rotateSpeedFactor);
+		this.rotateVertical(angle);
 	}
 
 	/**
 	 * Rotate up api
 	 */
-	moveUp() {
+	moveUp(deg = null) {
+		const angle = deg || this.rotateSpeed * this.rotateSpeedFactor;
 		this.setKeyDampingFactor();
-		this.rotateVertical(this.rotateSpeed * this.rotateSpeedFactor);
+		this.rotateVertical(-angle);
 	}
 
 	zoomIn() {
@@ -388,11 +392,11 @@ class OrbitControls extends EventDispatcher {
 				this.moveDown();
 				break;
 
-			case scope.keys.LEFT:
+			case this.keys.LEFT:
 				this.moveLeft();
 				break;
 
-			case scope.keys.RIGHT:
+			case this.keys.RIGHT:
 				this.moveRight();
 				break;
 
@@ -496,17 +500,17 @@ class OrbitControls extends EventDispatcher {
 
 			case STATE.TOUCH_PAN:
 
-				if ( scope.enablePan === false ) return;
+				if ( this.enablePan === false ) return;
 
 				handleTouchMovePan( event );
 
-				scope.update();
+				this.update();
 
 				break;
 
 			case STATE.TOUCH_DOLLY_PAN:
 
-				if ( scope.enableZoom === false && scope.enablePan === false ) return;
+				if ( this.enableZoom === false && this.enablePan === false ) return;
 
 				this.handleTouchMoveDollyPan( event );
 
