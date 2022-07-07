@@ -39,8 +39,6 @@ import {
 
 
 const EPS = 0.000001,
-//STATE = { NONE: - 1, ROTATE: 0, DOLLY: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_DOLLY_PAN: 4 };
-
 STATE = {
 	NONE: - 1,
 	ROTATE: 0,
@@ -50,13 +48,12 @@ STATE = {
 	TOUCH_PAN: 4,
 	TOUCH_DOLLY_PAN: 5,
 	TOUCH_DOLLY_ROTATE: 6
-};
-
-const _pointers = [],
+},
 _pointerPositions = {},
 mouseButtons = { LEFT: MOUSE.ROTATE, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.PAN },
 touches = { ONE: TOUCH.ROTATE, TWO: TOUCH.DOLLY_PAN };
 
+let _pointers = [];
 
 function addPointer( event ) {
 	_pointers.push( event );
@@ -85,7 +82,8 @@ function trackPointer( event ) {
 }
 
 function getSecondPointerPosition( event ) {
-	const pointer = ( event.pointerId === pointers[ 0 ].pointerId ) ? _pointers[ 1 ] : _pointers[ 0 ];
+	if (!_pointers.length) return;
+	const pointer = ( event.pointerId === _pointers[ 0 ].pointerId ) ? _pointers[ 1 ] : _pointers[ 0 ];
 	return _pointerPositions[ pointer.pointerId ];
 }
 
@@ -359,6 +357,18 @@ class OrbitControls extends EventDispatcher {
 		this.rotateVertical(-angle);
 	}
 
+	resetYAxis() {
+		this.sphericalDelta.phi = 0.2;
+		this.object.position.y = this.position0.y;
+		this.update();
+	}
+
+	resetXAxis() {
+		this.sphericalDelta.theta = (this.sphericalDelta.theta < 0 ? .5 : -.5);
+		this.object.position.x = this.position0.x;
+		this.update();
+	}
+
 	zoomIn() {
 		this.dollyIn(this.getZoomScale() );
 
@@ -620,6 +630,8 @@ class OrbitControls extends EventDispatcher {
 		this.rotateUp( 2 * Math.PI * this.rotateDelta.y / element.clientHeight );
 
 		this.rotateStart.copy( this.rotateEnd );
+
+		//console.log("Touch Rotate ", this.rotateDelta);
 	}
 	
 	handleTouchMovePan( event ) {
@@ -639,7 +651,7 @@ class OrbitControls extends EventDispatcher {
 
 		}
 
-		this.panDelta.subVectors( panEnd, panStart ).multiplyScalar( this.panSpeed );
+		this.panDelta.subVectors( this.panEnd, this.panStart ).multiplyScalar( this.panSpeed );
 
 		this.pan( this.panDelta.x, this.panDelta.y );
 
@@ -977,6 +989,8 @@ class OrbitControls extends EventDispatcher {
 	}
 
 	onPointerDown( event ) {
+
+		//console.log("on pointer down ", this.enabled);
 		if ( this.enabled === false ) return;
 
 		//disable events when triggered by overlayed elements.
@@ -1002,6 +1016,8 @@ class OrbitControls extends EventDispatcher {
 			}
 	
 			addPointer( event );
+
+			//console.log("on pointer check ", event.pointerType);
 			if ( event.pointerType === 'touch' ) {
 				this.onTouchStart( event );
 			} else {
@@ -1080,8 +1096,10 @@ class OrbitControls extends EventDispatcher {
 
 		this.enabled = false;
 
+		_pointers = [];
+
 		//reset the controls for when switching to VRControls
-		this.reset();
+		//this.reset();
 
 		this.domElement.removeEventListener( 'pointerdown', this.onPointerDownRef );
 		this.domElement.removeEventListener( 'pointercancel', this.onPointerCancelRef );
