@@ -359,12 +359,14 @@ class OrbitControls extends EventDispatcher {
 
 	resetYAxis() {
 		this.sphericalDelta.phi = 0.2;
+		this.target.y = this.target0.y;
 		this.object.position.y = this.position0.y;
 		this.update();
 	}
 
 	resetXAxis() {
 		this.sphericalDelta.theta = (this.sphericalDelta.theta < 0 ? .5 : -.5);
+		this.target.x = this.target0.x;
 		this.object.position.x = this.position0.x;
 		this.update();
 	}
