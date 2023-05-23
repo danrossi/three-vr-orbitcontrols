@@ -1,0 +1,15 @@
+{
+    "name": "three-vr-omnitone",
+    "version": "0.153.0",
+    "description": "Three.js Omnitone Rotater",
+    "main": "build/three-vr-omnitone.js",
+    "module": "build/three-vr-omnitone.module.js",
+    "scripts": {
+      "build": "rollup -c rollup.config.js"
+    },
+    "author": "danielr",
+    "devDependencies": {
+      "rollup": "^2.38.0"
+    }
+  }
+  

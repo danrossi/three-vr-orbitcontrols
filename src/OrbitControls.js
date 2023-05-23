@@ -1,12 +1,3 @@
-import { EventDispatcher } from '../../three.js/src/core/EventDispatcher';
-import { Quaternion } from '../../three.js/src/math/Quaternion';
-import { Vector2 } from '../../three.js/src/math/Vector2';
-import { Vector3 } from '../../three.js/src/math/Vector3';
-import { Spherical } from '../../three.js/src/math/Spherical';
-import * as MathUtils from '../../three.js/src/math/MathUtils';
-import { MOUSE, TOUCH } from '../../three.js/src/constants';
-
-/*
 import {
 	EventDispatcher,
 	Quaternion,
@@ -16,7 +7,7 @@ import {
 	Vector3,
 	MOUSE,
 	TOUCH
-} from "../../three.js/build/three.module.js";*/
+} from 'three';
 
 
 /**
@@ -87,7 +78,7 @@ function getSecondPointerPosition( event ) {
 	return _pointerPositions[ pointer.pointerId ];
 }
 
-class OrbitControls extends EventDispatcher {
+export default class OrbitControls extends EventDispatcher {
 	constructor( object, domElement) {
 
 		super();
@@ -1244,5 +1235,3 @@ class OrbitControls extends EventDispatcher {
 	}
 
 }
-
-export { OrbitControls };
