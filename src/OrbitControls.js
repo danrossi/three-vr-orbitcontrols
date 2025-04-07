@@ -1129,8 +1129,7 @@ export default class OrbitControls extends EventDispatcher {
 		this.state = STATE.NONE;
 
 	}
-
-
+	
 	update() {
 
 		const offset = new Vector3(),
@@ -1140,8 +1139,10 @@ export default class OrbitControls extends EventDispatcher {
 			quatInverse = quat.clone().invert(),
 			lastPosition = new Vector3(),
 			lastQuaternion = new Quaternion(),
+			lastTargetPosition = new Vector3(),
 			position = this.object.position,
 			twoPI = 2 * Math.PI;
+			
 
 
 		offset.copy( position ).sub( this.target );
@@ -1157,6 +1158,7 @@ export default class OrbitControls extends EventDispatcher {
 
 		//this.spherical.theta += this.sphericalDelta.theta;
 		//this.spherical.phi += this.sphericalDelta.phi;
+		
 
 		//automatic damping
 		this.spherical.theta += this.sphericalDelta.theta * this.dampingFactor;
@@ -1164,6 +1166,30 @@ export default class OrbitControls extends EventDispatcher {
 
 		// restrict theta to be between desired limits
 		//this.spherical.theta = Math.max( this.minAzimuthAngle, Math.min( this.maxAzimuthAngle, this.spherical.theta ) );
+
+		/*let min = scope.minAzimuthAngle;
+		let max = scope.maxAzimuthAngle;
+
+		if ( isFinite( min ) && isFinite( max ) ) {
+
+			if ( min < - Math.PI ) min += twoPI; else if ( min > Math.PI ) min -= twoPI;
+
+			if ( max < - Math.PI ) max += twoPI; else if ( max > Math.PI ) max -= twoPI;
+
+			if ( min <= max ) {
+
+				spherical.theta = Math.max( min, Math.min( max, spherical.theta ) );
+
+			} else {
+
+				spherical.theta = ( spherical.theta > ( min + max ) / 2 ) ?
+					Math.max( min, spherical.theta ) :
+					Math.min( max, spherical.theta );
+
+			}
+
+		}*/
+
 
 		// restrict phi to be between desired limits
 		this.spherical.phi = Math.max( this.minPolarAngle, Math.min( this.maxPolarAngle, this.spherical.phi ) );
@@ -1198,6 +1224,7 @@ export default class OrbitControls extends EventDispatcher {
 		this.panOffset.multiplyScalar( 1 - this.dampingFactor );
 
 		this.scale = 1;
+
 		//this.panOffset.set( 0, 0, 0 );
 
 		// update condition is:
@@ -1206,12 +1233,14 @@ export default class OrbitControls extends EventDispatcher {
 
 		if ( this.zoomChanged ||
 			lastPosition.distanceToSquared( this.object.position ) > EPS ||
-			8 * ( 1 - lastQuaternion.dot( this.object.quaternion ) ) > EPS ) {
+			8 * ( 1 - lastQuaternion.dot( this.object.quaternion ) ) > EPS ||
+			lastTargetPosition.distanceToSquared( scope.target ) > 0 ) {
 
 			this.dispatchChange();
 
 			lastPosition.copy( this.object.position );
 			lastQuaternion.copy( this.object.quaternion );
+			lastTargetPosition.copy( this.object.target );
 			this.zoomChanged = false;
 
 			return true;
