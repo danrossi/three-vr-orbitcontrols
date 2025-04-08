@@ -1234,7 +1234,7 @@ export default class OrbitControls extends EventDispatcher {
 		if ( this.zoomChanged ||
 			lastPosition.distanceToSquared( this.object.position ) > EPS ||
 			8 * ( 1 - lastQuaternion.dot( this.object.quaternion ) ) > EPS ||
-			lastTargetPosition.distanceToSquared( scope.target ) > 0 ) {
+			lastTargetPosition.distanceToSquared( this.object.target ) > 0 ) {
 
 			this.dispatchChange();
 
