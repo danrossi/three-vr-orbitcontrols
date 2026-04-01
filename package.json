@@ -1,14 +1,14 @@
 {
-    "name": "three-vr-orbitcontrols",
-    "version": "0.174.0",
-    "description": "Three.js Orbit Controls",
-    "module": "build/three-vr-orbitcontrols.module.js",
-    "scripts": {
-      "build": "rollup -c rollup.config.js"
-    },
-    "author": "danielr",
-    "devDependencies": {
-      "rollup": "^2.38.0"
-    }
+  "name": "three-vr-orbitcontrols",
+  "version": "0.174.0",
+  "description": "Three.js Orbit Controls",
+  "module": "build/three-vr-orbitcontrols.module.js",
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c rollup.config.js"
+  },
+  "author": "danielr",
+  "devDependencies": {
+    "rollup": "^4.60.1"
   }
-  
+}

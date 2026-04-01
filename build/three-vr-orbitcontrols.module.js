@@ -21,7 +21,7 @@ import { MOUSE, TOUCH, EventDispatcher, Vector3, Spherical, Vector2, MathUtils, 
 
 const EPS = 0.000001,
 STATE = {
-	NONE: - 1,
+	NONE: -1,
 	ROTATE: 0,
 	DOLLY: 1,
 	PAN: 2,
@@ -346,7 +346,7 @@ class OrbitControls extends EventDispatcher {
 	}
 
 	resetXAxis() {
-		this.sphericalDelta.theta = (this.sphericalDelta.theta < 0 ? .5 : -.5);
+		this.sphericalDelta.theta = (this.sphericalDelta.theta < 0 ? .5 : -0.5);
 		this.target.x = this.target0.x;
 		this.object.position.x = this.position0.x;
 		this.update();
@@ -802,7 +802,7 @@ class OrbitControls extends EventDispatcher {
 
 			default:
 
-				mouseAction = - 1;
+				mouseAction = -1;
 
 		}
 
