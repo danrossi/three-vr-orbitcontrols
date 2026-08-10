@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "esnext",
+    "allowJs": true, // Tells TS to read .js files
+    "declaration": true, // Generates the .d.ts files
+    "emitDeclarationOnly": true, // Skips generating .js files
+    "outDir": "./types", // Places types in a dedicated folder
+    "rootDir": "./src",
+    //"skipLibCheck": true,
+    "types": ["vite/client", "@types/three"]
+  },
+  "include": ["./src/**/*.js"],
+  "exclude": ["./node_modules", "../../../../lib/node_modules"]
+}

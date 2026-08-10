@@ -3,12 +3,22 @@
   "version": "0.174.0",
   "description": "Three.js Orbit Controls",
   "module": "build/three-vr-orbitcontrols.module.js",
+  "types": "./build/OrbitControls.d.ts",
   "type": "module",
   "scripts": {
-    "build": "rollup -c rollup.config.js"
+    "build": "vite build"
   },
   "author": "danielr",
+  "overrides": {
+    "@microsoft/api-extractor": {
+      "typescript": "$typescript"
+    }
+  },
   "devDependencies": {
-    "rollup": "^4.60.1"
+    "@microsoft/api-extractor": "^7.58.12",
+    "@typescript/typescript6": "^6.0.2",
+    "three": "^0.185.1",
+    "unplugin-dts": "^1.0.3",
+    "vite": "^8.2.1"
   }
 }
