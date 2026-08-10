@@ -31,7 +31,7 @@ export default defineConfig(({ mode }) => {
       //license: true,
       emptyOutDir: false,
       lib: {
-        entry: ['./src/OrbitControls.js'],
+        entry: ['./three-vr-orbitcontrols.js'],
         fileName: (format, entryName) => {
           return `three-vr-orbitcontrols.module.js`;
         },
