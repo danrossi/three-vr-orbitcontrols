@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
         outDirs: './build',
 
         //entryRoot: './src',
-        declarationOnly: true,
+        //declarationOnly: true,
         //bundleTypes: true,
         // tsconfigPath: './tsconfig.json',
       }),
